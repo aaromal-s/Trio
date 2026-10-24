@@ -52,8 +52,8 @@
     "feature_count": 10,
     "random_seed": 42,
     "dataset_provenance": "High-fidelity synthetic enterprise microservices telemetry based on real-world SRE failure topologies (memory leak, thread pool exhaustion, cascading downstream timeout).",
-    "generated_at": "2026-10-24T14:13:58.603866+00:00"
+    "generated_at": "2026-10-24T15:37:43.130534+00:00"
   },
-  "evaluated_at": "2026-10-24T14:13:59.220274+00:00",
+  "evaluated_at": "2026-10-24T15:37:43.711483+00:00",
   "verified_truth": true
 }
