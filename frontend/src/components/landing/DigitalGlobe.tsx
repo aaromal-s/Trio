@@ -1,13 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { ShieldAlert, Zap, Sparkles, CheckCircle2, TrendingUp, AlertTriangle } from 'lucide-react';
+import { Zap, Sparkles, CheckCircle2, AlertOctagon, TrendingUp } from 'lucide-react';
 
 interface Point3D {
   x: number;
   y: number;
   z: number;
   baseRadius: number;
-  isCity?: boolean;
-  name?: string;
 }
 
 interface Arc {
@@ -28,8 +26,8 @@ export const DigitalGlobe: React.FC = () => {
     let animId: number;
     const dpr = window.devicePixelRatio || 1;
 
-    let width = canvas.parentElement?.clientWidth || 540;
-    let height = canvas.parentElement?.clientHeight || 540;
+    let width = canvas.parentElement?.clientWidth || 500;
+    let height = canvas.parentElement?.clientHeight || 460;
 
     canvas.width = width * dpr;
     canvas.height = height * dpr;
@@ -46,19 +44,20 @@ export const DigitalGlobe: React.FC = () => {
 
     window.addEventListener('resize', handleResize);
 
-    const radius = Math.min(width, height) * 0.38;
-    const globeCenter = { x: width * 0.5, y: height * 0.52 };
-    const tilt = 0.38; // ~22 degrees tilt
+    // Globe parameters - compact and balanced
+    const radius = Math.min(width, height) * 0.33;
+    const globeCenter = { x: width * 0.52, y: height * 0.5 };
+    const tilt = 0.32; // ~18 degrees tilt
     let rotation = 0;
 
     // Generate latitude/longitude points on the sphere
     const points: Point3D[] = [];
-    const latLines = 24;
+    const latLines = 22;
     for (let i = 0; i < latLines; i++) {
-      const lat = ((i + 0.5) / latLines - 0.5) * Math.PI; // -PI/2 to PI/2
+      const lat = ((i + 0.5) / latLines - 0.5) * Math.PI;
       const rAtLat = Math.cos(lat);
       const y = Math.sin(lat) * radius;
-      const count = Math.max(6, Math.floor(48 * rAtLat));
+      const count = Math.max(6, Math.floor(44 * rAtLat));
 
       for (let j = 0; j < count; j++) {
         const lon = (j / count) * 2 * Math.PI;
@@ -66,18 +65,18 @@ export const DigitalGlobe: React.FC = () => {
           x: Math.cos(lon) * rAtLat * radius,
           y: y,
           z: Math.sin(lon) * rAtLat * radius,
-          baseRadius: 1.2,
+          baseRadius: 1.1,
         });
       }
     }
 
     // Datacenter Cluster nodes on earth
     const datacenters: Point3D[] = [
-      { x: 0.65 * radius, y: -0.25 * radius, z: 0.7 * radius, baseRadius: 3.5, isCity: true, name: 'US-East (N. Virginia)' },
-      { x: 0.3 * radius, y: -0.15 * radius, z: 0.94 * radius, baseRadius: 3.5, isCity: true, name: 'US-West (Oregon)' },
-      { x: -0.2 * radius, y: -0.4 * radius, z: 0.88 * radius, baseRadius: 3.5, isCity: true, name: 'EU-Central (Frankfurt)' },
-      { x: -0.6 * radius, y: -0.1 * radius, z: 0.78 * radius, baseRadius: 3.5, isCity: true, name: 'AP-South (Mumbai)' },
-      { x: -0.85 * radius, y: -0.2 * radius, z: 0.45 * radius, baseRadius: 3.5, isCity: true, name: 'AP-East (Tokyo)' },
+      { x: 0.65 * radius, y: -0.22 * radius, z: 0.72 * radius, baseRadius: 3.5 },
+      { x: 0.28 * radius, y: -0.15 * radius, z: 0.95 * radius, baseRadius: 3.5 },
+      { x: -0.22 * radius, y: -0.38 * radius, z: 0.88 * radius, baseRadius: 3.5 },
+      { x: -0.58 * radius, y: -0.1 * radius, z: 0.8 * radius, baseRadius: 3.5 },
+      { x: -0.85 * radius, y: -0.2 * radius, z: 0.48 * radius, baseRadius: 3.5 },
     ];
 
     // Arcs connecting datacenters
@@ -91,7 +90,6 @@ export const DigitalGlobe: React.FC = () => {
     let packetProgress = 0;
 
     const render = () => {
-      // Pause animation if tab is hidden
       if (document.hidden) {
         animId = requestAnimationFrame(render);
         return;
@@ -99,8 +97,8 @@ export const DigitalGlobe: React.FC = () => {
 
       ctx.clearRect(0, 0, width, height);
 
-      rotation += 0.0035;
-      packetProgress = (packetProgress + 0.006) % 1;
+      rotation += 0.003;
+      packetProgress = (packetProgress + 0.005) % 1;
 
       const cosRot = Math.cos(rotation);
       const sinRot = Math.sin(rotation);
@@ -109,46 +107,43 @@ export const DigitalGlobe: React.FC = () => {
 
       // 1. Atmosphere Radial Glow
       const glowGrad = ctx.createRadialGradient(
-        globeCenter.x, globeCenter.y, radius * 0.7,
-        globeCenter.x, globeCenter.y, radius * 1.35
+        globeCenter.x, globeCenter.y, radius * 0.65,
+        globeCenter.x, globeCenter.y, radius * 1.3
       );
-      glowGrad.addColorStop(0, 'rgba(59, 130, 246, 0.12)');
-      glowGrad.addColorStop(0.5, 'rgba(6, 182, 212, 0.07)');
+      glowGrad.addColorStop(0, 'rgba(59, 130, 246, 0.15)');
+      glowGrad.addColorStop(0.5, 'rgba(6, 182, 212, 0.08)');
       glowGrad.addColorStop(0.85, 'rgba(139, 92, 246, 0.04)');
       glowGrad.addColorStop(1, 'rgba(6, 9, 17, 0)');
 
       ctx.fillStyle = glowGrad;
       ctx.beginPath();
-      ctx.arc(globeCenter.x, globeCenter.y, radius * 1.35, 0, 2 * Math.PI);
+      ctx.arc(globeCenter.x, globeCenter.y, radius * 1.3, 0, 2 * Math.PI);
       ctx.fill();
 
-      // Outer Sphere Silhouette Ring
-      ctx.strokeStyle = 'rgba(59, 130, 246, 0.22)';
+      // Outer Sphere Silhouette
+      ctx.strokeStyle = 'rgba(59, 130, 246, 0.2)';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.arc(globeCenter.x, globeCenter.y, radius, 0, 2 * Math.PI);
       ctx.stroke();
 
-      // Outer Equatorial Ring with slight tilt
-      ctx.strokeStyle = 'rgba(6, 182, 212, 0.15)';
+      // Orbital Meridian Ring
+      ctx.strokeStyle = 'rgba(6, 182, 212, 0.18)';
       ctx.lineWidth = 1.2;
       ctx.beginPath();
-      ctx.ellipse(globeCenter.x, globeCenter.y, radius * 1.22, radius * 0.42, -0.25, 0, 2 * Math.PI);
+      ctx.ellipse(globeCenter.x, globeCenter.y, radius * 1.22, radius * 0.38, -0.22, 0, 2 * Math.PI);
       ctx.stroke();
 
       // Project 3D point helper
       const project = (p: Point3D) => {
-        // Rotate around Y
         const rx = p.x * cosRot - p.z * sinRot;
         const rz = p.x * sinRot + p.z * cosRot;
         const ry = p.y;
 
-        // Tilt around X
         const ty = ry * cosTilt - rz * sinTilt;
         const tz = ry * sinTilt + rz * cosTilt;
         const tx = rx;
 
-        // Perspective
         const perspective = 700;
         const scale = perspective / (perspective - tz);
         const x2d = globeCenter.x + tx * scale;
@@ -162,17 +157,16 @@ export const DigitalGlobe: React.FC = () => {
         const p = points[i];
         const proj = project(p);
 
-        // Depth cue: front hemisphere points are brighter
         const isFront = proj.z > 0;
         const alpha = isFront
           ? Math.min(0.9, 0.25 + (proj.z / radius) * 0.65)
-          : Math.max(0.06, 0.18 + (proj.z / radius) * 0.12);
+          : Math.max(0.06, 0.15 + (proj.z / radius) * 0.1);
 
         ctx.fillStyle = isFront
           ? `rgba(0, 240, 255, ${alpha})`
           : `rgba(99, 102, 241, ${alpha})`;
 
-        const dotSize = (p.baseRadius * (isFront ? 1.2 : 0.8)) * proj.scale;
+        const dotSize = (p.baseRadius * (isFront ? 1.15 : 0.75)) * proj.scale;
         ctx.beginPath();
         ctx.arc(proj.x, proj.y, Math.max(0.6, dotSize), 0, 2 * Math.PI);
         ctx.fill();
@@ -183,34 +177,33 @@ export const DigitalGlobe: React.FC = () => {
         const proj1 = project(arc.p1);
         const proj2 = project(arc.p2);
 
-        // Only draw if at least one point is somewhat visible
-        if (proj1.z > -radius * 0.5 || proj2.z > -radius * 0.5) {
+        if (proj1.z > -radius * 0.4 || proj2.z > -radius * 0.4) {
           const midX = (proj1.x + proj2.x) / 2;
-          const midY = (proj1.y + proj2.y) / 2 - radius * 0.28;
+          const midY = (proj1.y + proj2.y) / 2 - radius * 0.25;
 
           ctx.strokeStyle = arc.color;
-          ctx.lineWidth = 1.4;
-          ctx.globalAlpha = Math.max(0.15, Math.min(0.7, (proj1.z + proj2.z + radius) / (2 * radius)));
+          ctx.lineWidth = 1.3;
+          ctx.globalAlpha = Math.max(0.15, Math.min(0.65, (proj1.z + proj2.z + radius) / (2 * radius)));
           ctx.beginPath();
           ctx.moveTo(proj1.x, proj1.y);
           ctx.quadraticCurveTo(midX, midY, proj2.x, proj2.y);
           ctx.stroke();
 
           // Packet Pulse traveling along the arc
-          const t = (packetProgress + 0.25) % 1;
+          const t = (packetProgress + 0.3) % 1;
           const px = (1 - t) * (1 - t) * proj1.x + 2 * (1 - t) * t * midX + t * t * proj2.x;
           const py = (1 - t) * (1 - t) * proj1.y + 2 * (1 - t) * t * midY + t * t * proj2.y;
 
           ctx.fillStyle = '#ffffff';
           ctx.globalAlpha = 0.9;
           ctx.beginPath();
-          ctx.arc(px, py, 2.8, 0, 2 * Math.PI);
+          ctx.arc(px, py, 2.5, 0, 2 * Math.PI);
           ctx.fill();
 
           ctx.fillStyle = arc.color;
-          ctx.globalAlpha = 0.5;
+          ctx.globalAlpha = 0.45;
           ctx.beginPath();
-          ctx.arc(px, py, 5.5, 0, 2 * Math.PI);
+          ctx.arc(px, py, 5, 0, 2 * Math.PI);
           ctx.fill();
         }
       }
@@ -222,16 +215,14 @@ export const DigitalGlobe: React.FC = () => {
         if (proj.z > -radius * 0.2) {
           const intensity = Math.max(0.3, (proj.z + radius * 0.2) / (radius * 1.2));
 
-          // Outer halo pulse
           ctx.fillStyle = `rgba(0, 240, 255, ${0.35 * intensity})`;
           ctx.beginPath();
-          ctx.arc(proj.x, proj.y, 8 * proj.scale, 0, 2 * Math.PI);
+          ctx.arc(proj.x, proj.y, 7 * proj.scale, 0, 2 * Math.PI);
           ctx.fill();
 
-          // Bright center
           ctx.fillStyle = '#ffffff';
           ctx.beginPath();
-          ctx.arc(proj.x, proj.y, 3 * proj.scale, 0, 2 * Math.PI);
+          ctx.arc(proj.x, proj.y, 2.8 * proj.scale, 0, 2 * Math.PI);
           ctx.fill();
         }
       }
@@ -248,14 +239,14 @@ export const DigitalGlobe: React.FC = () => {
   }, []);
 
   return (
-    <div className="relative w-full h-[460px] sm:h-[520px] lg:h-[560px] flex items-center justify-center select-none overflow-visible">
+    <div className="relative w-full h-[400px] sm:h-[440px] lg:h-[480px] flex items-center justify-center select-none">
       
-      {/* Background ambient lighting behind the globe */}
+      {/* Background ambient lighting */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-[380px] h-[380px] sm:w-[460px] sm:h-[460px] bg-gradient-radial from-brand-blue/20 via-cyan-500/10 to-transparent rounded-full blur-2xl" />
+        <div className="w-[320px] h-[320px] sm:w-[400px] sm:h-[400px] bg-gradient-radial from-brand-blue/20 via-cyan-500/10 to-transparent rounded-full blur-2xl" />
       </div>
 
-      {/* 3D Canvas Visual Element */}
+      {/* 3D Canvas */}
       <canvas
         ref={canvasRef}
         className="w-full h-full relative z-10"
@@ -263,87 +254,81 @@ export const DigitalGlobe: React.FC = () => {
       />
 
       {/* ============================================================== */}
-      {/* FLOATING GLASSMORPHISM INCIDENT CARDS SURROUNDING THE GLOBE */}
+      {/* THREE COMPACT FLOATING GLASS INCIDENT CARDS (SNUG AROUND GLOBE) */}
       {/* ============================================================== */}
 
-      {/* Card 1: Top-Right Critical Latency & Memory Alert */}
-      <div className="absolute top-2 -right-2 sm:top-6 sm:right-0 z-20 animate-float max-w-[240px] sm:max-w-[260px]">
-        <div className="p-3.5 rounded-2xl bg-midnight-950/85 border border-rose-500/40 backdrop-blur-xl shadow-glow-sm hover:border-rose-400 transition-colors">
-          <div className="flex items-center justify-between gap-2 mb-2">
+      {/* Card 1: Top-Right Critical Incident Alert */}
+      <div className="absolute top-2 right-0 sm:top-4 sm:right-2 z-20 animate-float max-w-[210px] sm:max-w-[230px]">
+        <div className="p-3 rounded-xl bg-midnight-950/90 border border-rose-500/40 backdrop-blur-xl shadow-glow-sm hover:border-rose-400 transition-colors">
+          <div className="flex items-center justify-between gap-1.5 mb-1.5">
             <div className="flex items-center gap-1.5">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
               </span>
-              <span className="text-[10px] font-bold text-rose-400 uppercase tracking-wider">CRITICAL INCIDENT</span>
+              <span className="text-[9px] font-bold text-rose-400 uppercase tracking-wider">CRITICAL INCIDENT</span>
             </div>
-            <span className="text-[9px] font-mono text-slate-400">P1-SLA</span>
+            <span className="text-[8px] font-mono text-slate-400">P1-SLA</span>
           </div>
 
-          <div className="text-xs font-semibold text-white truncate">payment-processor</div>
+          <div className="text-[11px] font-bold text-white truncate">payment-processor</div>
           
-          <div className="mt-2 grid grid-cols-2 gap-1.5 text-[11px] font-mono bg-midnight-900/80 p-2 rounded-lg border border-white/5">
+          <div className="mt-1.5 grid grid-cols-2 gap-1 text-[10px] font-mono bg-midnight-900/80 p-1.5 rounded-lg border border-white/5">
             <div>
-              <span className="text-slate-500 text-[9px] block">P99 LATENCY</span>
-              <span className="text-rose-400 font-bold">740 ms</span>
+              <span className="text-slate-500 text-[8px] block">P99 LATENCY</span>
+              <span className="text-rose-400 font-bold">740ms</span>
             </div>
             <div>
-              <span className="text-slate-500 text-[9px] block">HEAP MEMORY</span>
+              <span className="text-slate-500 text-[8px] block">MEMORY</span>
               <span className="text-rose-400 font-bold">94.2%</span>
             </div>
-          </div>
-
-          <div className="mt-2 flex items-center justify-between text-[10px]">
-            <span className="text-slate-400">Predicted Risk:</span>
-            <span className="font-bold font-mono text-rose-400">94.2% (+30m)</span>
           </div>
         </div>
       </div>
 
-      {/* Card 2: Top-Left Pre-Breach Machine Learning Early Warning */}
-      <div className="absolute top-10 -left-2 sm:top-14 sm:left-0 z-20 animate-float-delayed max-w-[230px] sm:max-w-[250px]">
-        <div className="p-3.5 rounded-2xl bg-midnight-950/85 border border-cyan-500/40 backdrop-blur-xl shadow-glow-cyan hover:border-cyan-300 transition-colors">
-          <div className="flex items-center justify-between gap-2 mb-1.5">
+      {/* Card 2: Mid-Left Predictive Risk Warning */}
+      <div className="absolute top-20 left-0 sm:top-24 sm:-left-2 z-20 animate-float-delayed max-w-[210px] sm:max-w-[230px]">
+        <div className="p-3 rounded-xl bg-midnight-950/90 border border-cyan-500/40 backdrop-blur-xl shadow-glow-cyan hover:border-cyan-300 transition-colors">
+          <div className="flex items-center justify-between gap-1.5 mb-1">
             <div className="flex items-center gap-1.5">
               <Zap className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="text-[10px] font-bold text-cyan-300 uppercase tracking-wider">PREDICTIVE RADAR</span>
+              <span className="text-[9px] font-bold text-cyan-300 uppercase tracking-wider">PREDICTIVE RADAR</span>
             </div>
-            <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">99.89%</span>
+            <span className="text-[8px] font-mono text-emerald-400 bg-emerald-500/10 px-1 py-0.2 rounded border border-emerald-500/20">99.89%</span>
           </div>
 
-          <p className="text-xs font-semibold text-white">Pre-Cursor Detected</p>
-          <p className="text-[10px] text-slate-300 mt-1 leading-snug">
-            Thread lock accumulation flagged 26 minutes prior to customer outage.
-          </p>
+          <p className="text-[11px] font-semibold text-white">Risk: 94.2% Imminent</p>
+          <div className="w-full bg-slate-800 rounded-full h-1.5 mt-1.5 mb-1">
+            <div className="bg-gradient-to-r from-amber-400 to-rose-500 h-1.5 rounded-full" style={{ width: '94.2%' }} />
+          </div>
 
-          <div className="mt-2 flex items-center gap-2 text-[9px] text-cyan-300 font-mono">
+          <div className="flex items-center justify-between text-[9px] text-cyan-300 font-mono">
             <span>HORIZON: +30 MIN</span>
-            <span>&bull;</span>
             <span>RF-v1.4.2</span>
           </div>
         </div>
       </div>
 
-      {/* Card 3: Bottom-Right AI Copilot Remediation Proposal */}
-      <div className="absolute -bottom-2 right-2 sm:bottom-4 sm:right-6 z-20 animate-float-slow max-w-[250px] sm:max-w-[280px]">
-        <div className="p-3.5 rounded-2xl bg-midnight-950/85 border border-violet-500/40 backdrop-blur-xl shadow-glow-violet hover:border-violet-300 transition-colors">
-          <div className="flex items-center justify-between gap-2 mb-2">
+      {/* Card 3: Bottom-Right AI Copilot Triage Action */}
+      <div className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 z-20 animate-float-slow max-w-[220px] sm:max-w-[240px]">
+        <div className="p-3 rounded-xl bg-midnight-950/90 border border-violet-500/40 backdrop-blur-xl shadow-glow-violet hover:border-violet-300 transition-colors">
+          <div className="flex items-center justify-between gap-1.5 mb-1.5">
             <div className="flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-violet-400" />
-              <span className="text-[10px] font-bold text-violet-300 uppercase tracking-wider">AI COPILOT TRIAGE</span>
+              <span className="text-[9px] font-bold text-violet-300 uppercase tracking-wider">AI COPILOT TRIAGE</span>
             </div>
-            <span className="text-[9px] text-slate-400 font-mono">Governed</span>
+            <span className="text-[8px] text-emerald-400 font-mono">Verified</span>
           </div>
 
-          <div className="text-xs text-slate-200">
-            <span className="text-white font-semibold block">Scale Replica Pool (x2)</span>
-            <span className="text-[10px] text-slate-400 block mt-0.5">Blast radius: 1 pod &bull; Guaranteed rollback</span>
+          <div className="text-[11px] text-slate-200">
+            <span className="text-white font-semibold block truncate">Scale Replica Pool (x2)</span>
+            <span className="text-[9px] text-slate-400 block mt-0.5">Blast radius: 1 pod &bull; Zero downtime</span>
           </div>
 
-          <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between text-[10px]">
+          <div className="mt-2 pt-1.5 border-t border-white/10 flex items-center justify-between text-[9px]">
             <span className="text-amber-400 flex items-center gap-1 font-medium">
               <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-              Awaiting Lead SRE Sign-off
+              Awaiting SRE Sign-off
             </span>
           </div>
         </div>

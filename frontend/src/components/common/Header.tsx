@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
-  RefreshCw, Pause, Play, Clock, User as UserIcon, LogOut,
-  Activity, Menu, X, ChevronRight, Zap
+  RefreshCw, Pause, Play, Clock, LogOut, Activity,
+  Menu, X, ChevronRight, Zap, Sun, Moon
 } from 'lucide-react';
 import { useLiveData } from '../../context/LiveDataContext';
 import { useAuth } from '../../context/AuthContext';
@@ -24,15 +24,14 @@ export const Header: React.FC<HeaderProps> = ({
     clock,
     isRefreshing,
     isPaused,
-    lastUpdatedRelative,
     refreshError,
     refreshNow,
     togglePause,
-    overview
   } = useLiveData();
 
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   // Close mobile drawer on ESC
   useEffect(() => {
@@ -61,10 +60,10 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-white/[0.08] bg-midnight-950/90 backdrop-blur-xl transition-all shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-3">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         
         {/* Left: Brand Logo & Navigation Links */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-8">
           <button 
             onClick={() => {
               setCurrentView('landing');
@@ -76,8 +75,8 @@ export const Header: React.FC<HeaderProps> = ({
             <AegisLogo variant="horizontal" size="sm" />
           </button>
 
-          {/* Desktop Navigation Links (Compact) */}
-          <nav className="hidden md:flex items-center gap-5 text-xs font-medium text-slate-300">
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-slate-300">
             {navLinks.map((link) => (
               <a
                 key={link.label}
@@ -97,6 +96,8 @@ export const Header: React.FC<HeaderProps> = ({
                 {link.label}
               </a>
             ))}
+            
+            {/* Direct Link to Console for convenience */}
             <button
               onClick={() => setCurrentView('dashboard')}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all ${
@@ -107,80 +108,84 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Activity className="w-3.5 h-3.5 text-cyan-400" />
               <span>Console</span>
-              {overview?.overall_health === 'DEGRADED' && (
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
-              )}
             </button>
           </nav>
         </div>
 
-        {/* Right: Live Clock, 5s Auto-Refresh & Auth Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Right: Actions, Theme Toggle & Controls */}
+        <div className="flex items-center gap-3">
           
-          {/* Live 12-Hour Browser Clock with IST timezone (Compact) */}
-          <div 
-            className="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-lg bg-midnight-900/90 border border-white/[0.06] text-xs font-mono"
-            title="System Time in IST (UTC+5:30)"
-          >
-            <Clock className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-white font-bold tracking-wider">{clock.timeString}</span>
-              <span className="text-[10px] text-slate-400 font-sans">IST</span>
+          {/* Controls visible ONLY when on Dashboard Console */}
+          {currentView === 'dashboard' && (
+            <div className="hidden lg:flex items-center gap-2 pr-3 border-r border-white/[0.08]">
+              {/* 12-Hour IST Clock */}
+              <div 
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-midnight-900 border border-white/[0.06] text-xs font-mono"
+                title="Browser system clock in IST (UTC+5:30)"
+              >
+                <Clock className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                <span className="text-white font-bold">{clock.timeString}</span>
+                <span className="text-[10px] text-slate-400 font-sans">IST</span>
+              </div>
+
+              {/* 5s Auto-refresh controls */}
+              <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-midnight-900 border border-white/[0.06] text-xs">
+                <span className="relative flex h-2 w-2 mr-1">
+                  {!isPaused && (
+                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                      refreshError ? 'bg-amber-400' : 'bg-emerald-400'
+                    }`} />
+                  )}
+                  <span className={`relative inline-flex rounded-full h-2 w-2 ${
+                    isPaused ? 'bg-slate-500' : refreshError ? 'bg-amber-400' : 'bg-emerald-400'
+                  }`} />
+                </span>
+
+                <button
+                  onClick={refreshNow}
+                  disabled={isRefreshing}
+                  title="Manual refresh"
+                  aria-label="Refresh now"
+                  className="p-1 rounded text-slate-400 hover:text-white transition-colors"
+                >
+                  <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin text-brand-blue' : ''}`} />
+                </button>
+
+                <button
+                  onClick={togglePause}
+                  title={isPaused ? "Resume auto-refresh" : "Pause auto-refresh"}
+                  aria-label={isPaused ? "Resume" : "Pause"}
+                  className="p-1 rounded text-slate-400 hover:text-white transition-colors"
+                >
+                  {isPaused ? <Play className="w-3 h-3 text-emerald-400" /> : <Pause className="w-3 h-3 text-amber-400" />}
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* 5-Second Auto-Refresh Widget (Compact) */}
-          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-midnight-900/90 border border-white/[0.06] text-xs">
-            <span className="relative flex h-2 w-2 mr-1" title={refreshError || 'Auto-refreshing every 5 seconds'}>
-              {!isPaused && (
-                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                  refreshError ? 'bg-amber-400' : 'bg-emerald-400'
-                }`} />
-              )}
-              <span className={`relative inline-flex rounded-full h-2 w-2 ${
-                isPaused ? 'bg-slate-500' : refreshError ? 'bg-amber-400' : 'bg-emerald-400'
-              }`} />
-            </span>
+          {/* Small Theme Toggle (Dark/Light) */}
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            title="Toggle theme (default dark midnight)"
+            aria-label="Toggle theme"
+            className="p-1.5 rounded-lg border border-white/10 bg-midnight-900/80 text-slate-400 hover:text-white transition-colors"
+          >
+            {isDarkMode ? <Moon className="w-3.5 h-3.5 text-cyan-400" /> : <Sun className="w-3.5 h-3.5 text-amber-400" />}
+          </button>
 
-            <button
-              onClick={refreshNow}
-              disabled={isRefreshing}
-              title="Manual Refresh (5s stream)"
-              aria-label="Refresh Now"
-              className="p-1 rounded text-slate-400 hover:text-white hover:bg-white/10 disabled:opacity-50 transition-colors"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-brand-blue' : ''}`} />
-            </button>
-
-            <button
-              onClick={togglePause}
-              title={isPaused ? "Resume 5s auto-refresh" : "Pause 5s auto-refresh"}
-              aria-label={isPaused ? "Resume Auto-refresh" : "Pause Auto-refresh"}
-              className="p-1 rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
-            >
-              {isPaused ? (
-                <Play className="w-3.5 h-3.5 text-emerald-400" />
-              ) : (
-                <Pause className="w-3.5 h-3.5 text-amber-400" />
-              )}
-            </button>
-          </div>
-
-          {/* User Account / Auth Actions */}
+          {/* Authenticated user vs Guest actions */}
           {user ? (
             <div className="flex items-center gap-2 pl-2 border-l border-white/[0.08]">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-brand-blue to-violet-500 flex items-center justify-center text-white text-xs font-bold shadow-sm">
-                  {user.full_name.charAt(0) || user.email.charAt(0).toUpperCase()}
-                </div>
-                <div className="hidden lg:flex flex-col text-left leading-none">
-                  <span className="text-xs font-semibold text-white">{user.full_name}</span>
-                  <span className="text-[9px] text-cyan-400 font-mono uppercase mt-0.5">{user.role}</span>
-                </div>
+              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-brand-blue to-violet-500 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                {user.full_name.charAt(0) || user.email.charAt(0).toUpperCase()}
+              </div>
+              <div className="hidden sm:flex flex-col text-left leading-none">
+                <span className="text-xs font-semibold text-white">{user.full_name}</span>
+                <span className="text-[9px] text-cyan-400 font-mono uppercase mt-0.5">{user.role}</span>
               </div>
               <button
                 onClick={logout}
-                title="Sign out of AegisOps"
+                title="Sign out"
                 aria-label="Sign out"
                 className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
               >
@@ -188,7 +193,7 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => openAuthModal('login')}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-white/[0.06] transition-colors"
@@ -287,11 +292,6 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Mobile Footer */}
             <div className="pt-5 border-t border-white/10 flex flex-col gap-3">
-              <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
-                <Clock className="w-3.5 h-3.5 text-cyan-400" />
-                <span>{clock.timeString} (IST)</span>
-              </div>
-
               {user ? (
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.04]">
                   <div>
