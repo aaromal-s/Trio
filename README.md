@@ -1,206 +1,225 @@
-# AegisOps AI — Elite Enterprise AIOps Platform
+# TRIO — Contradiction-Guided Tri-Memory AI Discovery Platform
 
-> **"Detect. Predict. Resolve. Before Incidents Happen."**
-> 
-> *AegisOps AI transforms infrastructure telemetry into actionable operational intelligence through anomaly detection, incident risk estimation, and evidence-based investigation.*
-
----
-
-## 1. Executive Summary
-
-**AegisOps AI** is a production-grade operations intelligence and automated Site Reliability Engineering (SRE) platform. It continuously processes 5-second operational telemetry across distributed microservices, provides calibrated **30-minute pre-breach risk estimations**, isolates statistical anomalies via unsupervised geometry, and synthesizes evidence-based root-cause investigations strictly segregating **Facts**, **Inferences**, and **Hypotheses**.
-
-All remediation blueprints require **Human-in-the-Loop** authorization with explicit blast-radius evaluations and automated rollback procedures.
+> **Tagline:** Learn. Remember. Discover.  
+> **Headline:** *"Discover What Your Data Has Never Seen Before."*  
+> **Research Title:** *Contradiction-Guided Tri-Memory Unsupervised Learning for Unknown Operational-State Discovery.*
 
 ---
 
-## 2. Key Features & Capabilities
+## 1. Project Overview & Research Problem
 
-- **Distinctive Custom Brand Identity**: Custom vector geometric 'A' shield emblem with electric cyan, blue, and violet gradients across web, favicon, social preview, and desktop/mobile layouts.
-- **Plain-English AIOps Guide**: Built-in beginner explanations and interactive simulation playground for System Health, Active Incidents, Anomalies, Predicted Risk, Investigations, and Resolutions.
-- **Interactive Guided Console Tour**: 8-step onboarding walkthrough navigating SREs and stakeholders through every console module.
-- **Zero-Drift 5-Second Telemetry Ingest**: Real-time sampling of CPU, memory, P99 latency, request throughput (RPS), error rates, disk I/O, and network metrics across 8 microservices.
-- **Calibrated Incident Risk Estimation (+30m Horizon)**: Supervised Random Forest classifier (`rf-v1.4.2`) calculating probability of catastrophic failure prior to SLA violation.
-- **Unsupervised Anomaly Isolation**: Isolation Forest detector (`iso-v1.2.0`) evaluating geometric deviation from nominal traffic without relying on class labels.
-- **AI Investigation Copilot**: Synthesizes verifiable telemetry facts, algorithmic inferences, and testable hypotheses to recommend read-only diagnostic checks and remediation steps.
-- **Human-in-the-Loop SRE Governance**: Consequential actions require explicit operator sign-off. Full audit trail of approvals, rejections, and execution logs.
-- **Interactive Service Topology**: Visualizes microservice dependency hierarchies, live RPS throughput, and degraded call paths on HTML5 Canvas.
-- **12-Hour IST Live Clock & Telemetry Sync**: Native browser clock updating every 1s with seconds and IST timezone, tab-visibility pausing, and manual refresh controls.
-- **Audited Persistence**: SQLAlchemy data layer with PostgreSQL support, automatic SQLite fallback for standalone zero-config execution, and immutable audit logs.
+In critical cyber-physical systems (such as municipal water treatment plants, power grids, chemical refineries, and smart robotics), processes evolve over time into operational regimes that **have never been observed in historical training data**.
+
+### The Core Problem
+Conventional anomaly detection algorithms (such as standard distance thresholds, Isolation Forests, or static K-Means) treat **any** unfamiliar sensor reading as a momentary fault or alarm. This leads to two critical failures:
+1. **Severe Alarm Fatigue:** Operators are bombarded by alarms for recurring, persistent operational transitions.
+2. **Inability to Characterize Unknown States:** Traditional systems cannot distinguish between an isolated transient sensor spike and a **cohesive, sustainable unknown operational condition** (e.g., secondary pump cavitation, filter fouling, or novel load cycles).
+
+### The TRIO Solution
+TRIO is an intelligent industrial sensor analytics platform built upon a **Contradiction-Guided Tri-Memory Architecture**. It learns verified normal operating prototypes unsupervised, tracks immediate temporal momentum, isolates multi-sensor contradictions, and uses density-based clustering (DBSCAN) to discover and characterize unknown operational states.
 
 ---
 
-## 3. System Architecture & Tech Stack
-
-```mermaid
-graph TD
-    subgraph "Client Layer (React 19 + TypeScript + Vite + Tailwind)"
-        UI["AegisOps Web Shell (Public Landing & Console)"]
-        Brand["AegisOps Brand System & SVG Assets"]
-        Clock["12-Hour IST Live Clock (1s Tick)"]
-        Poller["5-Second Telemetry Poller (Visibility Aware)"]
-        UI --> Brand
-        UI --> Clock
-        UI --> Poller
-    end
-
-    subgraph "API Gateway & Security (FastAPI + Pydantic v2)"
-        API["FastAPI App (uvicorn)"]
-        Auth["JWT Bearer Auth + Direct Bcrypt"]
-        API --> Auth
-    end
-
-    subgraph "Operational Intelligence Engine"
-        RF["Random Forest Predictor (+30m Risk Score)"]
-        ISO["Isolation Forest (Anomaly Score)"]
-        Copilot["Copilot Reasoner (Fact / Inference / Hypothesis)"]
-    end
-
-    subgraph "Persistence & Telemetry (PostgreSQL / SQLite)"
-        DB[(SQLAlchemy Relational Store)]
-        Audit[(Immutable Audit Logs)]
-        Prom["Prometheus Telemetry Stream (Simulated)"]
-    end
-
-    Poller -->|REST API (5s)| API
-    UI -->|JSON / SSE| API
-    API --> RF
-    API --> ISO
-    API --> Copilot
-    API --> DB
-    API --> Audit
-    API --> Prom
-```
-
-### Technology Stack
-- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS, Lucide React, HTML5 Canvas.
-- **Backend**: Python 3.11 / 3.14, FastAPI, Pydantic v2, Uvicorn, SQLAlchemy.
-- **Machine Learning**: scikit-learn (RandomForestClassifier, IsolationForest, CalibratedClassifierCV), NumPy, SciPy, Joblib.
-- **Database**: PostgreSQL 16 (Production) / SQLite (Standalone portable).
-- **Deployment**: Vercel (Frontend), AWS App Runner / ECS (Backend), Amazon RDS (PostgreSQL), Docker Compose.
-- **Quality Gates**: Pytest (Backend API & ML), Vitest (Frontend Components & Logic).
-
----
-
-## 4. Machine Learning Methodology & Measured Results
-
-Treating 95%+ as an experimental target rather than an assumption, the predictive pipeline was trained on 6,000 empirical microservice telemetry records and verified strictly on a **900-sample held-out test split** (never exposed during model tuning).
-
-### Measured Performance Results on Held-Out Test Set
-
-| Metric | Measured Value | Target Benchmark | Status |
-| :--- | :--- | :--- | :--- |
-| **Accuracy** | **99.89%** | &ge; 95.0% | **PASSED** |
-| **Precision** | **100.00%** | &ge; 90.0% | **PASSED** |
-| **Recall** | **99.32%** | &ge; 90.0% | **PASSED** |
-| **F1 Score** | **0.9966** | &ge; 0.900 | **PASSED** |
-| **ROC-AUC** | **1.0000** | &ge; 0.950 | **PASSED** |
-| **PR-AUC** | **1.0000** | &ge; 0.900 | **PASSED** |
-| **False Positive Rate (FPR)** | **0.00%** | &le; 2.0% | **PASSED** |
-| **False Negative Rate (FNR)** | **0.68%** | &le; 5.0% | **PASSED** |
-
-### Confusion Matrix on Held-Out Test Split (N = 900)
+## 2. Architecture & The Three Memory Systems
 
 ```
-                    Predicted Negative      Predicted Positive
-Actual Negative:         752 (TN)                  0 (FP)
-Actual Positive:           1 (FN)                147 (TP)
+                              [ Raw Sensor Stream: FIT101, DPIT301, LIT101... ]
+                                                      │
+                                                      ▼
+                                       ┌─────────────────────────────┐
+                                       │  Short-Term Memory (STM)    │
+                                       │  - Sliding Observation Win  │
+                                       │  - Temporal Velocity (Δv)   │
+                                       │  - Moving Average (μ)       │
+                                       └──────────────┬──────────────┘
+                                                      │
+                                                      ▼
+                                       ┌─────────────────────────────┐
+                                       │    Contradiction Scorer     │
+                                       │   C = α·D + β·T + γ·A       │
+                                       └───────┬─────────────┬───────┘
+                     If C < τ (Familiar)       │             │ If C ≥ τ (Contradictory)
+                                ┌──────────────┘             └──────────────┐
+                                ▼                                           ▼
+                 ┌─────────────────────────────┐             ┌─────────────────────────────┐
+                 │    Long-Term Memory (LTM)   │             │ Contradiction Memory (CM)   │
+                 │    - Learned Prototypes     │             │ - Ingests Divergent Points  │
+                 │    - Centroid Vectors       │             │ - Evidence Accumulation     │
+                 │    - Covariance Radii       │             │ - DBSCAN Density Clustering │
+                 └─────────────────────────────┘             └──────────────┬──────────────┘
+                                                                            │
+                                                                            ▼
+                                                             ┌─────────────────────────────┐
+                                                             │ Unknown Operational State   │
+                                                             │ Discovery Candidates:       │
+                                                             │ - Status: Pending/Confirmed │
+                                                             │ - Multivariate Δ Delts      │
+                                                             │ - Explainable Diagnosis     │
+                                                             └─────────────────────────────┘
 ```
 
-### Fair Comparison with Baselines
-- **Stratified Dummy Classifier**: 72.33% Accuracy | F1: 0.1672
-- **Heuristic Rule Baseline (CPU > 85% or Latency > 600ms)**: 97.44% Accuracy | F1: 0.9204
-- **AegisOps Random Forest Model (`rf-v1.4.2`)**: **99.89% Accuracy | F1: 0.9966**
+### A. Short-Term Memory (STM)
+* **Purpose:** Stores the most recent observation sliding window ($N = 30$).
+* **Mechanism:** Computes running moving averages, velocity vectors ($\Delta v$), and local temporal variance.
+* **Role:** Calculates the **Temporal Inconsistency ($T$)** factor and filters high-frequency single-step noise.
 
-### Provenance & Methodology
-Telemetry features incorporate primary measurements (`cpu`, `memory`, `latency_p99`, `rps`, `error_rate`, `disk_io`, `network`) and engineered interaction terms (`cpu_latency_interaction`, `error_throughput_impact`, `resource_strain_index`). Model artifacts are serialized to `backend/app/ml/artifacts/incident_predictor.joblib` and verifiable metrics to `evaluation_metrics.json`.
+### B. Long-Term Memory (LTM)
+* **Purpose:** Stores verified known operating-state prototypes learned unsupervised from baseline historical data.
+* **Mechanism:** Maintains cluster centroid coordinates ($\mu_k$), activation frequencies, and 95th-percentile dispersion radii.
+* **Role:** Calculates the **Prototype Distance ($D$)** factor for any incoming observation.
+
+### C. Contradiction Memory (CM)
+* **Purpose:** The core discovery engine. Ingests and stores multi-sensor observations that conflict with known LTM prototypes ($C \ge \tau$).
+* **Mechanism:** Runs DBSCAN density clustering on contradictory points across time windows to detect persistent, dense clusters.
+* **Role:** Transitions candidates through: `Pending` $\rightarrow$ `Under Validation` $\rightarrow$ `Confirmed` (or `Rejected` if transient).
 
 ---
 
-## 5. Automated Test Suite & Quality Gates
+## 3. Mathematical Formulation: Contradiction Scoring
 
-### Backend Pytest Suite (14/14 Tests Passed)
-```bash
-cd backend
-python -m pytest tests -v
-```
-- `test_auth.py`: User registration, JWT login, profile persistence, password change, invalid credential rejection.
-- `test_ml.py`: Data quality verification, nominal risk prediction, critical risk prediction, verified model evaluation metrics (&ge;95%).
-- `test_incidents.py`: Incident filtering, timeline retrieval, remediation approval workflow, remediation rejection workflow.
-- `test_copilot.py`: AI Copilot root cause investigation, strictly testing Fact / Inference / Hypothesis categorization.
-- `test_health_and_telemetry.py`: System health check, 5s live telemetry stream, topology graph endpoint, overview aggregation.
+TRIO evaluates each observation using a transparent, normalized contradiction score:
 
-### Frontend Vitest Suite (9/9 Tests Passed)
-```bash
-cd frontend
-npm run test
-```
-- `aegisLogo.test.tsx`: Custom vector shield 'A' logo, horizontal wordmark, icon-only variant, and accessibility labels.
-- `clock.test.ts`: 12-hour AM/PM clock format with seconds and IST timezone logic.
-- `badge.test.tsx`: Severity badges (P1-P4) and status pulse animations.
-- `metricCard.test.tsx`: MetricCard value rendering, trends, and subtitles.
+$$C = \alpha \cdot D + \beta \cdot T + \gamma \cdot A$$
+
+Where:
+* **$D \in [0, 1]$ (Prototype Distance):**  
+  Normalized Euclidean distance from the nearest known LTM prototype centroid:
+  $$D = 1 - \exp(-\lambda \cdot \min_{k} \|x - \mu_k\|)$$
+* **$T \in [0, 1]$ (Temporal Inconsistency):**  
+  Deviation from the STM sliding window moving average $\bar{x}_{\text{STM}}$:
+  $$T = 1 - \exp(-\eta \cdot \|x - \bar{x}_{\text{STM}}\|)$$
+* **$A \in [0, 1]$ (Anomaly Score):**  
+  Normalized outlier density score from an unsupervised baseline estimator:
+  $$A = \frac{1}{1 + \exp(\kappa \cdot (s_{\text{raw}} + 0.4))}$$
+* **Default Starting Weights:**  
+  $$\alpha = 0.45, \quad \beta = 0.30, \quad \gamma = 0.25 \quad (\alpha + \beta + \gamma = 1.0)$$
+* **Ingestion Threshold:**  
+  $\tau = 0.48$. Observations with $C \ge \tau$ enter Contradiction Memory for candidate clustering.
 
 ---
 
-## 6. How to Run Locally
+## 4. Leakage-Free Machine Learning Pipeline
+
+1. **Chronological Splitting:** Enforces strict temporal ordering ($70\%$ Train, $30\%$ Test). Shuffling is prohibited.
+2. **Zero Information Leakage:** Feature scalers (`StandardScaler`) and LTM cluster centroids are fitted strictly on baseline training partitions.
+3. **No Ground Truth in Training:** Unsupervised models never receive evaluation labels during training. Ground-truth labels are reserved exclusively for benchmark verification.
+
+---
+
+## 5. Industrial Dataset Information
+
+### Primary Research Testbed: SWaT (Secure Water Treatment)
+* **Origin:** iTrust, Singapore University of Technology and Design (SUTD).
+* **Scope:** 6-stage operational water treatment facility (P1: Raw Inflow, P2: Chemical Dosing, P3: Ultrafiltration, P4: Dechlorination, P5: Reverse Osmosis, P6: Distribution).
+* **Official Access:** [iTrust SUTD Dataset Info](https://itrust.sutd.edu.sg/itrust-labs_datasets/dataset_info/#swat).
+* *Note: Official SWaT files require institutional authorization. Do not redistribute restricted files.*
+
+### Synthetic High-Fidelity Testbed (Included)
+* TRIO includes a built-in multi-variable synthetic generator simulating SWaT dynamics (`FIT101`, `LIT101`, `MV101`, `P101`, `DPIT301`, `FIT201`, `AIT202`, `AIT402`).
+* Features realistic cyclical patterns, membrane fouling drift, transient anomalies, and a persistent unknown pump cavitation operational state.
+* Clearly labeled: `"SIMULATED DEMO DATA — NOT REAL FACTORY DATA"`.
+
+---
+
+## 6. Algorithmic Benchmarks & Comparative Metrics
+
+TRIO is continuously benchmarked against three baseline unsupervised methods:
+1. **K-Means Clustering:** Assigns test observations by centroid distance.
+2. **DBSCAN Density Clustering:** Classifies low-density points as noise ($-1$).
+3. **Isolation Forest:** Tree-based anomaly detection via random partitioning depth.
+4. **TRIO (Proposed):** Contradiction-guided tri-memory with density candidate clustering.
+
+### Evaluated Metrics
+* **Adjusted Rand Index (ARI):** Cluster agreement against ground-truth ($-1$ to $+1$).
+* **Normalized Mutual Information (NMI):** Information-theoretic cluster alignment ($0$ to $1$).
+* **Precision & Recall:** Exact detection of true novel operational states.
+* **F1-Score:** Harmonic mean of precision and recall.
+* **False Discovery Rate (FDR):** $\text{FDR} = \frac{\text{FP}}{\text{FP} + \text{TP}}$. Measures resistance to alarm fatigue.
+* **Detection Delay:** Timesteps elapsed from true novel state onset to discovery.
+* **Runtime:** Execution latency in milliseconds.
+
+---
+
+## 7. Tech Stack
+
+* **Frontend:** React 19, TypeScript, Vite, Tailwind CSS, Framer Motion, Lucide React, Recharts.
+* **Backend:** Python 3.13, FastAPI, Pydantic, Scikit-learn, NumPy, Pandas, Uvicorn.
+* **Testing:** Pytest, HTTPX, TypeScript Compiler (`tsc -b`), Vite Production Bundler.
+
+---
+
+## 8. Installation & Quick Start
 
 ### Prerequisites
-- Node.js (v18+) and npm
-- Python (3.10+)
+* Python 3.11+
+* Node.js v18+ (tested on Node v24)
+* npm
 
-### Backend Setup
+### Step 1: Backend Setup
 ```bash
 cd backend
-python -m pip install -r requirements.txt
-python -m app.ml.train          # Train & serialize model artifacts
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+python -m venv venv
+.\venv\Scripts\pip install -r requirements.txt
+.\venv\Scripts\python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
-API Documentation will be live at: `http://localhost:8000/docs`
+* Backend Health Check: `http://127.0.0.1:8000/api/health`
+* Interactive API Documentation (Swagger): `http://127.0.0.1:8000/docs`
 
-### Frontend Setup
+### Step 2: Frontend Setup
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-Web Application will be live at: `http://localhost:5173`
+* Open Browser: `http://localhost:5173`
+
+### 1-Click Launch (Windows)
+Run `start_all.bat` from the root directory to initiate both servers concurrently.
 
 ---
 
-## 7. Running with Docker Compose
+## 9. API Reference
 
-Deploy the complete multi-tier platform (PostgreSQL database, FastAPI backend, and Nginx-served React frontend) in a single command:
-
-```bash
-docker compose up --build
-```
-
-- **Frontend Application**: `http://localhost:3000`
-- **Backend API & OpenAPI Docs**: `http://localhost:8000/docs`
-- **PostgreSQL Database**: `localhost:5432`
-
----
-
-## 8. Production Deployment: Vercel & AWS
-
-For full step-by-step instructions on deploying the decoupled stack (Vercel Frontend + AWS App Runner Backend + Amazon RDS PostgreSQL), refer to:
-[AWS_DEPLOYMENT.md](file:///c:/Users/dhanu/OneDrive/Desktop/PROJECT/AWS_DEPLOYMENT.md)
-
----
-
-## 9. Verified Demo Accounts
-
-| Role | Email | Password | Access Level |
-| :--- | :--- | :--- | :--- |
-| **SRE Lead / Admin** | `lead@aegisops.ai` | `AegisOps@2026` | Full Remediation Approval & Governance |
-| **DevOps Engineer** | `engineer@aegisops.ai` | `AegisOps@2026` | Investigation & Telemetry Review |
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/health` | Service health status and timestamp |
+| `GET` | `/api/dashboard/overview` | Aggregated KPIs, sensor trends, state distribution |
+| `GET` | `/api/datasets/current` | Active dataset metadata and validation |
+| `GET` | `/api/datasets/preview` | Preview observation rows |
+| `POST` | `/api/datasets/generate-synthetic` | Generate new synthetic industrial dataset |
+| `POST` | `/api/datasets/upload-csv` | Upload custom testbed CSV dataset |
+| `GET` | `/api/models/status` | Active model version and weights |
+| `POST` | `/api/models/train` | Train TRIO or baseline models with custom weights |
+| `GET` | `/api/models/history` | Historical training run logs |
+| `GET` | `/api/memory/status` | Real-time status of STM, LTM, and CM |
+| `GET` | `/api/memory/stm` | STM sliding window buffer and velocity |
+| `GET` | `/api/memory/ltm` | LTM known prototype centroid vectors |
+| `GET` | `/api/memory/cm` | Contradiction Memory records and scores |
+| `GET` | `/api/discoveries` | List discovered unknown operational states |
+| `POST` | `/api/discoveries/{id}/status` | Update candidate status (Confirmed/Rejected/Validation) |
+| `GET` | `/api/evaluation/benchmark` | Comparative benchmark metrics table |
+| `GET` | `/api/evaluation/export-csv` | Download evaluation benchmark CSV |
 
 ---
 
-## 10. Example CV Bullet Points
+## 10. Production Deployment
 
-- *Architected and engineered **AegisOps AI**, an enterprise AIOps platform integrating continuous 5-second telemetry streams, calibrated ML risk estimation, and an evidence-based incident copilot.*
-- *Implemented a supervised Random Forest classifier achieving **99.89% test accuracy** and **0.9966 F1 score** on a held-out test split, enabling 30-minute pre-breach anomaly detection.*
-- *Designed an evidence-based investigation engine strictly segregating verifiable telemetry facts, algorithmic inferences, and testable hypotheses to reduce MTTR from 28.5m to 12.4m.*
-- *Constructed a zero-trust governance layer enforcing Human-in-the-Loop authorization with automated rollback procedures and immutable compliance audit trails.*
-- *Engineered a responsive frontend using React 19, TypeScript, and Tailwind CSS, featuring an interactive Canvas topology graph, 12-hour IST live clock, and tab-visibility aware auto-polling.*
+### Frontend (Vercel)
+1. Push repository to GitHub.
+2. In Vercel, set root directory to `frontend`.
+3. Set Build Command to `npm run build` and Output Directory to `dist`.
+4. Configure environment variable: `VITE_API_BASE_URL=https://your-backend.onrender.com/api`.
+5. Deploy. The included `frontend/vercel.json` ensures SPA client-side routing.
+
+### Backend (Render / Railway / Fly.io / Docker)
+* Use the included `backend/Dockerfile` or `backend/Procfile`.
+* Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
+
+---
+
+## 11. Limitations & Future Roadmap
+
+* **Observation Lag:** Candidate confirmation requires a minimum threshold of evidence ($N \ge 15$). Ultra-rapid catastrophic breakdowns under 3 timesteps require physical electrical trip relays.
+* **Online LTM Assimilation:** Future versions will support automated promotion of `Confirmed` candidates into LTM prototypes during continuous operation.
+* **Edge Deployment:** Optimization for deployment onto ARM-based industrial gateways and PLC microcontrollers.
+

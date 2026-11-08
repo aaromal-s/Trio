@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="g-stm" x1="50" y1="50" x2="50" y2="16" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F8FAFC" />
+      <stop offset="100%" stop-color="#22D3EE" />
+    </linearGradient>
+    <linearGradient id="g-ltm" x1="50" y1="50" x2="20" y2="76" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F8FAFC" />
+      <stop offset="100%" stop-color="#8B5CF6" />
+    </linearGradient>
+    <linearGradient id="g-cm" x1="50" y1="50" x2="80" y2="76" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F8FAFC" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#22D3EE" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#0B1120" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Ambient Glow -->
+  <circle cx="50" cy="50" r="42" fill="url(#glow)"/>
+
+  <!-- Triangular Outer Ring Track -->
+  <circle cx="50" cy="50" r="36" stroke="#1E293B" stroke-width="1.5" stroke-dasharray="3 3"/>
+
+  <!-- Interconnecting Memory Neural Links -->
+  <line x1="50" y1="50" x2="50" y2="20" stroke="url(#g-stm)" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="50" y1="50" x2="24" y2="72" stroke="url(#g-ltm)" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="50" y1="50" x2="76" y2="72" stroke="url(#g-cm)" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Triangular Outer Interconnecting Bridge -->
+  <polygon points="50,20 24,72 76,72" fill="none" stroke="#334155" stroke-width="1.2" stroke-linejoin="round" opacity="0.6"/>
+
+  <!-- Node 1: Short-Term Memory (Cyan, Top) -->
+  <circle cx="50" cy="20" r="7.5" fill="#111C30" stroke="#22D3EE" stroke-width="2.5"/>
+  <circle cx="50" cy="20" r="3" fill="#22D3EE"/>
+
+  <!-- Node 2: Long-Term Memory (Purple, Bottom Left) -->
+  <circle cx="24" cy="72" r="7.5" fill="#111C30" stroke="#8B5CF6" stroke-width="2.5"/>
+  <circle cx="24" cy="72" r="3" fill="#8B5CF6"/>
+
+  <!-- Node 3: Contradiction Memory (Amber, Bottom Right) -->
+  <circle cx="76" cy="72" r="7.5" fill="#111C30" stroke="#F59E0B" stroke-width="2.5"/>
+  <circle cx="76" cy="72" r="3" fill="#F59E0B"/>
+
+  <!-- Central Intelligence Point (Core) -->
+  <circle cx="50" cy="50" r="6" fill="#F8FAFC" filter="drop-shadow(0 0 6px #22D3EE)"/>
+  <circle cx="50" cy="50" r="2.5" fill="#0B1120"/>
+</svg>
+
