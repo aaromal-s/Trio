@@ -2,48 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --trio-bg: #090E17;
+  --trio-secondary: #0F1726;
+  --trio-card: #131E33;
+  --trio-card-hover: #192640;
+  --trio-text: #F8FAFC;
+  --trio-muted: #94A3B8;
+  --trio-border: #1E293B;
+  --trio-glow: rgba(34, 211, 238, 0.12);
+}
+
+html.light, .light {
+  --trio-bg: #F8FAFC;
+  --trio-secondary: #F1F5F9;
+  --trio-card: #FFFFFF;
+  --trio-card-hover: #F8FAFC;
+  --trio-text: #0F172A;
+  --trio-muted: #64748B;
+  --trio-border: #E2E8F0;
+  --trio-glow: rgba(34, 211, 238, 0.15);
+}
+
 @layer base {
   body {
-    @apply bg-trio-bg text-trio-text font-sans antialiased selection:bg-trio-cyan selection:text-black;
+    background-color: var(--trio-bg);
+    color: var(--trio-text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     overflow-x: hidden;
+    transition: background-color 0.15s ease, color 0.15s ease;
   }
 }
 
 /* Custom sleek scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0B1120;
+  background: var(--trio-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1E293B;
+  background: #253347;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #384b66;
 }
 
-/* Smooth glassmorphic backdrop utility */
+/* Glassmorphic card utility */
 .glass-panel {
-  background: rgba(22, 36, 58, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--trio-card);
+  border: 1px solid var(--trio-border);
 }
 
 .glass-card {
-  background: rgba(17, 28, 48, 0.85);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(34, 211, 238, 0.12);
-  transition: all 0.2s ease-in-out;
+  background: var(--trio-card);
+  border: 1px solid var(--trio-border);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .glass-card:hover {
   border-color: rgba(34, 211, 238, 0.35);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
 }

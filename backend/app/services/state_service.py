@@ -3,6 +3,7 @@ TRIO Global In-Memory State Service
 Maintains active dataset, preprocessor, trained models, Tri-Memory states, and discoveries.
 """
 
+import os
 from typing import Optional, Dict, Any, List
 import pandas as pd
 import numpy as np
@@ -15,13 +16,17 @@ from app.ml.baselines import BaselinePipelines
 from app.ml.evaluator import ModelEvaluator
 from app.core.config import settings
 
+# Default features aligned with MetroPT3 Railway Air Compressor SCADA
+DEFAULT_FEATURES = ["TP2", "TP3", "H1", "DV_pressure", "Reservoirs", "Oil_temperature", "Motor_current"]
+DEFAULT_ACTUATORS = ["COMP", "DV_eletric", "Towers"]
+
 class StateService:
     def __init__(self):
         self.active_dataset: Optional[pd.DataFrame] = None
-        self.dataset_name: str = "Simulated Industrial SWaT Testbed"
-        self.is_simulated: bool = True
-        self.feature_cols: List[str] = ["FIT101", "LIT101", "DPIT301", "FIT201", "AIT202", "AIT402"]
-        self.actuator_cols: List[str] = ["MV101", "P101"]
+        self.dataset_name: str = "MetroPT-3 Railway Air Production Unit (APU) SCADA Telemetry"
+        self.is_simulated: bool = False
+        self.feature_cols: List[str] = list(DEFAULT_FEATURES)
+        self.actuator_cols: List[str] = list(DEFAULT_ACTUATORS)
         self.train_df: Optional[pd.DataFrame] = None
         self.test_df: Optional[pd.DataFrame] = None
         
@@ -30,7 +35,7 @@ class StateService:
             alpha=settings.DEFAULT_ALPHA,
             beta=settings.DEFAULT_BETA,
             gamma=settings.DEFAULT_GAMMA,
-            contradiction_threshold=settings.DEFAULT_CONTRADICTION_THRESHOLD,
+            contradiction_threshold=0.32,
             min_evidence_discovery=settings.MIN_EVIDENCE_DISCOVERY
         )
         
@@ -39,11 +44,39 @@ class StateService:
         self.stream_results: Optional[Dict[str, Any]] = None
         self.last_updated: float = time.time()
         
-        # Initialize default synthetic data so platform is immediately functional
-        self.load_default_synthetic()
+        # Initialize with real preprocessed industrial dataset
+        self.load_initial_dataset()
+
+    def load_initial_dataset(self):
+        """Loads preprocessed MetroPT3 dataset if available, otherwise falls back to synthetic."""
+        candidate_paths = [
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "data", "MetroPT3_AirCompressor_Operational.csv")),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "Dataset", "MetroPT3_AirCompressor_Preprocessed.csv")),
+            os.path.abspath("backend/data/MetroPT3_AirCompressor_Operational.csv"),
+            os.path.abspath("Dataset/MetroPT3_AirCompressor_Preprocessed.csv"),
+        ]
+        
+        target_path = None
+        for p in candidate_paths:
+            if os.path.exists(p):
+                target_path = p
+                break
+        
+        if target_path:
+            df = pd.read_csv(target_path)
+            features = [c for c in DEFAULT_FEATURES if c in df.columns]
+            self.set_dataset(df, "MetroPT-3 Railway Air Production Unit (APU) SCADA Telemetry", is_simulated=False)
+            self.feature_cols = features if len(features) >= 2 else list(DEFAULT_FEATURES)
+            self.actuator_cols = [c for c in DEFAULT_ACTUATORS if c in df.columns]
+            self.train_all(self.feature_cols, train_ratio=0.7)
+        else:
+            self.load_default_synthetic()
 
     def load_default_synthetic(self, n_samples: int = 1500):
         df = generate_synthetic_industrial_data(n_samples=n_samples, seed=42)
+        features = ["FIT101", "LIT101", "DPIT301", "FIT201", "AIT202", "AIT402"]
+        self.feature_cols = features
+        self.actuator_cols = ["MV101", "P101"]
         self.set_dataset(df, "Synthetic Industrial Water Treatment Dataset (SWaT-Sim)", is_simulated=True)
         # Pre-train the default model so dashboard works out-of-the-box
         self.train_all(self.feature_cols, train_ratio=0.7)
@@ -65,7 +98,15 @@ class StateService:
         if self.active_dataset is None:
             raise ValueError("No active dataset loaded.")
             
-        features = feature_cols or self.feature_cols
+        if feature_cols:
+            features = feature_cols
+        else:
+            valid_existing = [c for c in self.feature_cols if c in self.active_dataset.columns]
+            if len(valid_existing) >= 2:
+                features = valid_existing
+            else:
+                val = self.preprocessor.validate_dataset(self.active_dataset)
+                features = val["numeric_columns"][:6] if len(val["numeric_columns"]) >= 2 else DEFAULT_FEATURES
         self.feature_cols = features
         
         if alpha is not None and beta is not None and gamma is not None:
@@ -82,7 +123,8 @@ class StateService:
         
         # 1. Train TRIO Model
         start_trio = time.perf_counter()
-        self.trio_model.train(X_train_scaled, features, n_known_clusters=3)
+        n_known = min(3, max(2, len(X_train_scaled) // 10))
+        self.trio_model.train(X_train_scaled, features, n_known_clusters=n_known)
         timestamps = test_df["timestamp"].tolist() if "timestamp" in test_df.columns else [f"T{i}" for i in range(len(test_df))]
         stream_res = self.trio_model.process_stream(X_test_scaled, timestamps)
         trio_runtime_ms = (time.perf_counter() - start_trio) * 1000.0
@@ -109,7 +151,8 @@ class StateService:
         )
         
         # 2. Run Baselines
-        kmeans_res = BaselinePipelines.run_kmeans(X_train_scaled, X_test_scaled, n_clusters=4)
+        n_kmeans = min(4, max(2, len(X_train_scaled) // 10))
+        kmeans_res = BaselinePipelines.run_kmeans(X_train_scaled, X_test_scaled, n_clusters=n_kmeans)
         kmeans_eval = ModelEvaluator.compute_metrics(
             y_true_binary=y_true_binary,
             y_pred_binary=kmeans_res["predictions"],

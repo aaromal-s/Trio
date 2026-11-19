@@ -1,0 +1,427 @@
+{
+  "dataset_summary": {
+    "total_observations": 1500,
+    "train_observations": 1050,
+    "test_observations": 450,
+    "feature_columns": [
+      "FIT101",
+      "LIT101",
+      "DPIT301",
+      "FIT201",
+      "AIT202",
+      "AIT402"
+    ],
+    "test_unknown_count": 225,
+    "test_normal_count": 225
+  },
+  "benchmarks": [
+    {
+      "model_name": "TRIO (Ours)",
+      "ari": 0.4984,
+      "nmi": 0.5168,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "f1_score": 0.8281,
+      "false_discovery_rate": 0.0,
+      "detection_delay_timesteps": 0,
+      "runtime_ms": 19.65,
+      "true_positives": 159,
+      "false_positives": 0,
+      "training_time_ms": 185.69,
+      "candidates_discovered": 2
+    },
+    {
+      "model_name": "K-Means",
+      "ari": 0.6901,
+      "nmi": 0.6586,
+      "precision": 0.8555,
+      "recall": 1.0,
+      "f1_score": 0.9221,
+      "false_discovery_rate": 0.1445,
+      "detection_delay_timesteps": 0,
+      "runtime_ms": 43.2,
+      "true_positives": 225,
+      "false_positives": 38
+    },
+    {
+      "model_name": "DBSCAN",
+      "ari": 0.0036,
+      "nmi": 0.0531,
+      "precision": 1.0,
+      "recall": 0.0622,
+      "f1_score": 0.1172,
+      "false_discovery_rate": 0.0,
+      "detection_delay_timesteps": 17,
+      "runtime_ms": 9.01,
+      "true_positives": 14,
+      "false_positives": 0
+    },
+    {
+      "model_name": "Isolation Forest",
+      "ari": 0.2555,
+      "nmi": 0.3486,
+      "precision": 0.6696,
+      "recall": 1.0,
+      "f1_score": 0.8021,
+      "false_discovery_rate": 0.3304,
+      "detection_delay_timesteps": 0,
+      "runtime_ms": 91.05,
+      "true_positives": 225,
+      "false_positives": 111
+    }
+  ],
+  "confusion_matrix_trio": {
+    "true_negatives": 225,
+    "false_positives": 0,
+    "false_negatives": 66,
+    "true_positives": 159,
+    "accuracy": 0.8533
+  },
+  "ablation_study": [
+    {
+      "configuration": "Full TRIO (STM + LTM + CM)",
+      "model_name": "TRIO (Ours)",
+      "ari": 0.4984,
+      "nmi": 0.5168,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "f1_score": 0.8281,
+      "false_discovery_rate": 0.0,
+      "detection_delay_timesteps": 0,
+      "runtime_ms": 19.65,
+      "true_positives": 159,
+      "false_positives": 0,
+      "training_time_ms": 185.69,
+      "candidates_discovered": 2
+    },
+    {
+      "configuration": "No STM (\u03b2=0: Disables temporal context)",
+      "model_name": "Ablation 1 (No STM, \u03b2=0)",
+      "ari": 0.4984,
+      "nmi": 0.5168,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "f1_score": 0.8281,
+      "false_discovery_rate": 0.0,
+      "detection_delay_timesteps": 0,
+      "runtime_ms": 0.0,
+      "true_positives": 159,
+      "false_positives": 0,
+      "cm_count": 225,
+      "candidates": 2
+    },
+    {
+      "configuration": "No LTM (\u03b1=0: Disables prototype anchoring)",
+      "model_name": "Ablation 2 (No LTM, \u03b1=0)",
+      "ari": 0.0139,
+      "nmi": 0.0946,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "false_discovery_rate": 1.0,
+      "detection_delay_timesteps": 225,
+      "runtime_ms": 0.0,
+      "true_positives": 0,
+      "false_positives": 27,
+      "cm_count": 100,
+      "candidates": 1
+    },
+    {
+      "configuration": "No CM Clustering (Raw anomaly thresholding)",
+      "model_name": "Ablation 3 (No CM DBSCAN)",
+      "ari": 1.0,
+      "nmi": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "false_discovery_rate": 0.0,
+      "detection_delay_timesteps": 0,
+      "runtime_ms": 0.0,
+      "true_positives": 225,
+      "false_positives": 0,
+      "cm_count": 225,
+      "candidates": 225
+    }
+  ],
+  "threshold_sensitivity": [
+    {
+      "tau": 0.3,
+      "f1_score": 0.7737,
+      "precision": 0.8548,
+      "recall": 0.7067,
+      "fdr": 0.1452,
+      "candidates": 3
+    },
+    {
+      "tau": 0.32,
+      "f1_score": 0.7737,
+      "precision": 0.8548,
+      "recall": 0.7067,
+      "fdr": 0.1452,
+      "candidates": 3
+    },
+    {
+      "tau": 0.34,
+      "f1_score": 0.7775,
+      "precision": 0.8641,
+      "recall": 0.7067,
+      "fdr": 0.1359,
+      "candidates": 3
+    },
+    {
+      "tau": 0.36,
+      "f1_score": 0.7852,
+      "precision": 0.8833,
+      "recall": 0.7067,
+      "fdr": 0.1167,
+      "candidates": 3
+    },
+    {
+      "tau": 0.38,
+      "f1_score": 0.8281,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "fdr": 0.0,
+      "candidates": 2
+    },
+    {
+      "tau": 0.4,
+      "f1_score": 0.8281,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "fdr": 0.0,
+      "candidates": 2
+    },
+    {
+      "tau": 0.42,
+      "f1_score": 0.8281,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "fdr": 0.0,
+      "candidates": 2
+    },
+    {
+      "tau": 0.44,
+      "f1_score": 0.8281,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "fdr": 0.0,
+      "candidates": 2
+    },
+    {
+      "tau": 0.46,
+      "f1_score": 0.8281,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "fdr": 0.0,
+      "candidates": 2
+    },
+    {
+      "tau": 0.48,
+      "f1_score": 0.8281,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "fdr": 0.0,
+      "candidates": 2
+    },
+    {
+      "tau": 0.5,
+      "f1_score": 0.8281,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "fdr": 0.0,
+      "candidates": 2
+    },
+    {
+      "tau": 0.52,
+      "f1_score": 0.8281,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "fdr": 0.0,
+      "candidates": 2
+    },
+    {
+      "tau": 0.54,
+      "f1_score": 0.8281,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "fdr": 0.0,
+      "candidates": 2
+    },
+    {
+      "tau": 0.56,
+      "f1_score": 0.8281,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "fdr": 0.0,
+      "candidates": 2
+    },
+    {
+      "tau": 0.58,
+      "f1_score": 0.8281,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "fdr": 0.0,
+      "candidates": 2
+    },
+    {
+      "tau": 0.6,
+      "f1_score": 0.8281,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "fdr": 0.0,
+      "candidates": 2
+    },
+    {
+      "tau": 0.62,
+      "f1_score": 0.8281,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "fdr": 0.0,
+      "candidates": 2
+    },
+    {
+      "tau": 0.64,
+      "f1_score": 0.8281,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "fdr": 0.0,
+      "candidates": 2
+    },
+    {
+      "tau": 0.66,
+      "f1_score": 0.8281,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "fdr": 0.0,
+      "candidates": 2
+    },
+    {
+      "tau": 0.68,
+      "f1_score": 0.8281,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "fdr": 0.0,
+      "candidates": 2
+    },
+    {
+      "tau": 0.7,
+      "f1_score": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "fdr": 0.0,
+      "candidates": 0
+    }
+  ],
+  "weight_sensitivity": [
+    {
+      "name": "TRIO Baseline (Balanced)",
+      "alpha": 0.45,
+      "beta": 0.3,
+      "gamma": 0.25,
+      "f1_score": 0.8281,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "fdr": 0.0,
+      "candidates": 2
+    },
+    {
+      "name": "Distance-Heavy",
+      "alpha": 0.7,
+      "beta": 0.15,
+      "gamma": 0.15,
+      "f1_score": 0.8281,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "fdr": 0.0,
+      "candidates": 2
+    },
+    {
+      "name": "Temporal-Heavy",
+      "alpha": 0.2,
+      "beta": 0.6,
+      "gamma": 0.2,
+      "f1_score": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "fdr": 1.0,
+      "candidates": 1
+    },
+    {
+      "name": "Anomaly-Heavy",
+      "alpha": 0.2,
+      "beta": 0.2,
+      "gamma": 0.6,
+      "f1_score": 0.8281,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "fdr": 0.0,
+      "candidates": 2
+    },
+    {
+      "name": "Equal Partition",
+      "alpha": 0.333,
+      "beta": 0.333,
+      "gamma": 0.334,
+      "f1_score": 0.8281,
+      "precision": 1.0,
+      "recall": 0.7067,
+      "fdr": 0.0,
+      "candidates": 2
+    }
+  ],
+  "discovery_candidates": [
+    {
+      "candidate_id": "CAND-2026-001",
+      "first_detected": "2026-11-08T09:27:30",
+      "last_detected": "2026-11-08T09:36:10",
+      "observation_count": 89,
+      "mean_contradiction_score": 0.703,
+      "cluster_density": 1.1881,
+      "status": "Under Validation",
+      "explanation": "TRIO detected 89 sustained observations between 09:27:30 and 09:36:10 forming a tight, non-transient cluster (density: 1.19). Unlike transient anomalies, this pattern persisted across 89 timesteps. Key sensor shifts from known baseline: FIT201 (+9.82 std), AIT402 (+7.60 std) FIT101 (-4.20 std), AIT202 (-3.16 std).",
+      "feature_deltas": {
+        "FIT101": -4.1999,
+        "LIT101": -0.331,
+        "DPIT301": 4.7437,
+        "FIT201": 9.8225,
+        "AIT202": -3.1619,
+        "AIT402": 7.6032
+      },
+      "prototype_vector": {
+        "FIT101": -4.2716,
+        "LIT101": -1.2396,
+        "DPIT301": 4.515,
+        "FIT201": 9.7367,
+        "AIT202": -2.9663,
+        "AIT402": 8.5084
+      }
+    },
+    {
+      "candidate_id": "CAND-2026-002",
+      "first_detected": "2026-11-08T09:38:50",
+      "last_detected": "2026-11-08T09:46:10",
+      "observation_count": 70,
+      "mean_contradiction_score": 0.7035,
+      "cluster_density": 1.2824,
+      "status": "Confirmed",
+      "explanation": "TRIO detected 70 sustained observations between 09:38:50 and 09:46:10 forming a tight, non-transient cluster (density: 1.28). Unlike transient anomalies, this pattern persisted across 70 timesteps. Key sensor shifts from known baseline: FIT201 (+9.79 std), AIT402 (+7.53 std) FIT101 (-4.18 std), AIT202 (-3.18 std).",
+      "feature_deltas": {
+        "FIT101": -4.1811,
+        "LIT101": 2.0432,
+        "DPIT301": 4.7042,
+        "FIT201": 9.7888,
+        "AIT202": -3.1836,
+        "AIT402": 7.5291
+      },
+      "prototype_vector": {
+        "FIT101": -4.2528,
+        "LIT101": 1.1346,
+        "DPIT301": 4.4754,
+        "FIT201": 9.7031,
+        "AIT202": -2.9881,
+        "AIT402": 8.4343
+      }
+    }
+  ]
+}

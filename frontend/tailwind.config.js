@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -8,19 +9,19 @@ export default {
     extend: {
       colors: {
         trio: {
-          bg: "#0B1120",
-          secondary: "#111C30",
-          card: "#16243A",
-          cardHover: "#1E304D",
+          bg: "var(--trio-bg)",
+          secondary: "var(--trio-secondary)",
+          card: "var(--trio-card)",
+          cardHover: "var(--trio-card-hover)",
           cyan: "#22D3EE",
           purple: "#8B5CF6",
           green: "#34D399",
           amber: "#F59E0B",
           rose: "#F43F5E",
-          text: "#F8FAFC",
-          muted: "#94A3B8",
-          border: "#1E293B",
-          glow: "rgba(34, 211, 238, 0.15)"
+          text: "var(--trio-text)",
+          muted: "var(--trio-muted)",
+          border: "var(--trio-border)",
+          glow: "var(--trio-glow)"
         }
       },
       fontFamily: {
@@ -39,4 +40,3 @@ export default {
   },
   plugins: [],
 }
-

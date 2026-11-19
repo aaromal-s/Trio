@@ -5,15 +5,17 @@ import {
   RefreshCw, 
   Play, 
   Pause, 
-  CheckCircle2, 
   Database, 
   Cpu, 
   Bell, 
   User, 
   Settings, 
-  ExternalLink,
-  BookOpen,
-  LogOut
+  BookOpen, 
+  LogOut,
+  Sun,
+  Moon,
+  Menu,
+  X
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -32,6 +34,13 @@ interface NavbarProps {
   onOpenViva: () => void;
   onLogout: () => void;
   userEmail: string;
+  currentTheme: 'dark' | 'light';
+  onToggleTheme: () => void;
+  onToggleMobileMenu?: () => void;
+  isMobileMenuOpen?: boolean;
+  refreshInterval?: number;
+  isFetching?: boolean;
+  fetchError?: string | null;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -48,7 +57,14 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenProfile,
   onOpenViva,
   onLogout,
-  userEmail
+  userEmail,
+  currentTheme,
+  onToggleTheme,
+  onToggleMobileMenu,
+  isMobileMenuOpen = false,
+  refreshInterval = 5,
+  isFetching = false,
+  fetchError = null
 }) => {
   // Digital Clock state
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
@@ -70,8 +86,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-40 w-full h-16 bg-trio-secondary/90 backdrop-blur-md border-b border-trio-border px-4 sm:px-6 flex items-center justify-between">
-      {/* Brand & Landing Link */}
-      <div className="flex items-center gap-4">
+      {/* Brand & Mobile Hamburger */}
+      <div className="flex items-center gap-3">
+        {onToggleMobileMenu && (
+          <button
+            onClick={onToggleMobileMenu}
+            className="lg:hidden p-1.5 rounded-lg text-trio-muted hover:text-trio-text hover:bg-trio-card"
+            title="Toggle Navigation Menu"
+          >
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        )}
+
         <button 
           onClick={() => onNavigate('landing')}
           className="hover:opacity-90 transition-opacity focus:outline-none"
@@ -107,8 +133,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Right Controls: Digital Clock, Refresh, Viva Guide, User Menu */}
-      <div className="flex items-center gap-3">
+      {/* Right Controls: Digital Clock, Refresh, Theme Toggle, Viva Guide, User Menu */}
+      <div className="flex items-center gap-2.5 sm:gap-3">
         {/* Digital Clock */}
         <div className="hidden sm:flex flex-col items-end pr-3 border-r border-trio-border">
           <div className="flex items-center gap-1.5 font-mono text-xs font-semibold text-trio-text">
@@ -127,49 +153,57 @@ export const Navbar: React.FC<NavbarProps> = ({
                 ? 'text-trio-cyan hover:bg-cyan-950/40' 
                 : 'text-trio-muted hover:bg-slate-800'
             }`}
-            title={autoRefresh ? "Pause 5s Auto-Refresh" : "Resume 5s Auto-Refresh"}
+            title={autoRefresh ? `Pause ${refreshInterval}s Auto-Refresh` : `Resume ${refreshInterval}s Auto-Refresh`}
           >
             {autoRefresh ? (
               <>
                 <Pause className="w-3 h-3 text-trio-cyan" />
-                <span className="hidden md:inline text-[11px]">5s Active</span>
+                <span className="hidden md:inline text-[11px] font-mono">{refreshInterval}s Active</span>
               </>
             ) : (
               <>
                 <Play className="w-3 h-3 text-trio-amber" />
-                <span className="hidden md:inline text-[11px]">Paused</span>
+                <span className="hidden md:inline text-[11px] font-mono text-trio-amber">Paused</span>
               </>
             )}
           </button>
 
           <button
             onClick={onManualRefresh}
-            className="p-1 text-trio-muted hover:text-white hover:bg-slate-800 rounded transition-colors"
+            disabled={isFetching}
+            className="p-1 text-trio-muted hover:text-trio-text hover:bg-slate-800 rounded transition-colors disabled:opacity-50"
             title="Refresh now"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
+            <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin text-trio-cyan' : ''}`} />
           </button>
 
           <span className="hidden lg:inline text-[10px] text-trio-muted font-mono pl-1 border-l border-trio-border/60">
-            {secondsAgo}s ago
+            {isFetching ? 'Updating...' : `${secondsAgo}s ago`}
           </span>
+
+          {fetchError && (
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse ml-1" title={fetchError} />
+          )}
         </div>
 
-        {/* University Viva Quick Guide Button */}
+        {/* Light / Dark Theme Toggle Button */}
         <button
-          onClick={onOpenViva}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-purple-950/50 hover:bg-purple-900/60 text-purple-300 border border-purple-500/30 rounded-lg text-xs font-medium transition-all"
-          title="Open University Viva Evaluation Q&A Guide"
+          onClick={onToggleTheme}
+          className="p-2 text-trio-muted hover:text-trio-text hover:bg-trio-card rounded-lg transition-colors border border-trio-border"
+          title={`Switch to ${currentTheme === 'dark' ? 'Light' : 'Dark'} Theme`}
         >
-          <BookOpen className="w-3.5 h-3.5 text-purple-400" />
-          <span className="hidden sm:inline">Viva Guide</span>
+          {currentTheme === 'dark' ? (
+            <Sun className="w-4 h-4 text-trio-amber" />
+          ) : (
+            <Moon className="w-4 h-4 text-trio-purple" />
+          )}
         </button>
 
         {/* Notifications Icon */}
         <div className="relative">
           <button
             onClick={() => { setShowNotifications(!showNotifications); setShowUserMenu(false); }}
-            className="relative p-2 text-trio-muted hover:text-white hover:bg-trio-card rounded-lg transition-colors border border-transparent hover:border-trio-border"
+            className="relative p-2 text-trio-muted hover:text-trio-text hover:bg-trio-card rounded-lg transition-colors border border-transparent hover:border-trio-border"
             title="Notifications"
           >
             <Bell className="w-4 h-4" />
@@ -186,7 +220,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="text-[10px] text-trio-cyan font-mono">Live</span>
               </div>
               <div className="space-y-3 pt-3">
-                <div className="p-2.5 rounded-lg bg-trio-secondary/80 border border-trio-amber/20 text-xs">
+                <div className="p-2.5 rounded-lg bg-trio-secondary border border-trio-amber/20 text-xs">
                   <div className="flex items-center justify-between text-trio-amber font-medium">
                     <span>New Candidate CAND-2026-001</span>
                     <span className="text-[10px] text-trio-muted">Just now</span>
@@ -195,7 +229,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     Persistent correlation anomaly confirmed across 198 observations in stage-2 filtration.
                   </p>
                 </div>
-                <div className="p-2.5 rounded-lg bg-trio-secondary/80 border border-trio-border text-xs">
+                <div className="p-2.5 rounded-lg bg-trio-secondary border border-trio-border text-xs">
                   <div className="flex items-center justify-between text-trio-cyan font-medium">
                     <span>LTM Baseline Synchronized</span>
                     <span className="text-[10px] text-trio-muted">2m ago</span>
@@ -215,7 +249,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => { setShowUserMenu(!showUserMenu); setShowNotifications(false); }}
             className="flex items-center gap-2 p-1.5 hover:bg-trio-card rounded-lg transition-colors border border-transparent hover:border-trio-border"
           >
-            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-trio-cyan/40 to-trio-purple/40 flex items-center justify-center text-xs font-bold text-white border border-trio-cyan/30">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-trio-cyan to-trio-purple flex items-center justify-center text-xs font-bold text-black shadow-glow-cyan/20">
               {userEmail ? userEmail.charAt(0).toUpperCase() : 'U'}
             </div>
           </button>
@@ -223,21 +257,21 @@ export const Navbar: React.FC<NavbarProps> = ({
           {showUserMenu && (
             <div className="absolute right-0 mt-2 w-56 bg-trio-card border border-trio-border rounded-xl shadow-2xl p-2 z-50 text-left">
               <div className="px-3 py-2 border-b border-trio-border mb-1">
-                <p className="text-xs font-semibold text-white truncate">{userEmail || 'Demo Guest'}</p>
+                <p className="text-xs font-semibold text-trio-text truncate">{userEmail || 'Demo Guest'}</p>
                 <p className="text-[10px] text-trio-muted">University Evaluator Access</p>
               </div>
 
               <button
                 onClick={() => { onOpenProfile(); setShowUserMenu(false); }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-trio-muted hover:text-white hover:bg-trio-secondary rounded-lg transition-colors"
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-trio-muted hover:text-trio-text hover:bg-trio-secondary rounded-lg transition-colors"
               >
                 <User className="w-3.5 h-3.5" />
-                <span>Profile & Identity</span>
+                <span>Profile &amp; Password</span>
               </button>
 
               <button
                 onClick={() => { onOpenSettings(); setShowUserMenu(false); }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-trio-muted hover:text-white hover:bg-trio-secondary rounded-lg transition-colors"
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-trio-muted hover:text-trio-text hover:bg-trio-secondary rounded-lg transition-colors"
               >
                 <Settings className="w-3.5 h-3.5" />
                 <span>Platform Settings</span>
@@ -245,10 +279,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               <button
                 onClick={() => { onOpenViva(); setShowUserMenu(false); }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-purple-400 hover:text-purple-300 hover:bg-purple-950/40 rounded-lg transition-colors"
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-cyan-400 hover:text-cyan-300 hover:bg-cyan-950/40 rounded-lg transition-colors"
               >
                 <BookOpen className="w-3.5 h-3.5" />
-                <span>Viva Defense Guide</span>
+                <span>Architecture &amp; Specs</span>
               </button>
 
               <div className="border-t border-trio-border my-1"></div>
@@ -267,4 +301,3 @@ export const Navbar: React.FC<NavbarProps> = ({
     </header>
   );
 };
-

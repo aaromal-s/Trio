@@ -2,16 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { 
   Cpu, 
   Play, 
-  Settings2, 
   CheckCircle2, 
-  Clock, 
   Sliders, 
-  Layers, 
   Sparkles, 
   History, 
   AlertCircle,
-  HelpCircle,
-  Zap,
   ShieldCheck
 } from 'lucide-react';
 import { api, ModelStatus } from '../../services/api';
@@ -87,7 +82,9 @@ export const ModelLabPage: React.FC<ModelLabPageProps> = ({
       
       setTimeout(() => {
         setIsTraining(false);
-        setTrainingSuccess(`Training complete! Created model ${res.data.version}. Discovered ${res.data.candidates_count} unknown-state candidates.`);
+        const version = res?.data?.version || res?.version || 'v3.0';
+        const count = res?.data?.candidates_count ?? res?.candidates_count ?? 0;
+        setTrainingSuccess(`Training complete! Created model ${version}. Discovered ${count} unknown-state candidates.`);
         onTrainingComplete();
         loadHistory();
       }, 1200);

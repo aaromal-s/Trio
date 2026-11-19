@@ -1,19 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Database, 
   Upload, 
-  RefreshCw, 
-  FileText, 
   CheckCircle2, 
   AlertCircle, 
   ExternalLink, 
   Sparkles, 
-  Layers, 
-  Table, 
-  SlidersHorizontal,
-  ChevronLeft,
-  ChevronRight,
-  ShieldCheck
+  Table,
+  SlidersHorizontal
 } from 'lucide-react';
 import { api, DatasetInfo } from '../../services/api';
 
@@ -31,26 +25,26 @@ export const DatasetsPage: React.FC<DatasetsPageProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [previewData, setPreviewData] = useState<{ total_rows: number; columns: string[]; preview_rows: any[] } | null>(null);
-  const [previewPage, setPreviewPage] = useState(0);
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState('');
+  const [uploadDiagnostics, setUploadDiagnostics] = useState<any | null>(null);
   const [swatDetails, setSwatDetails] = useState<any>(null);
   const [selectedSensorFeatures, setSelectedSensorFeatures] = useState<string[]>(datasetInfo.selected_features);
 
-  // Fetch dataset preview and SWaT information
-  useEffect(() => {
-    loadPreview();
-    api.getSwatInfo().then(setSwatDetails).catch(() => {});
-  }, [datasetInfo.dataset_name]);
-
-  const loadPreview = async () => {
+  const loadPreview = useCallback(async () => {
     try {
       const res = await api.getDatasetPreview(25);
       setPreviewData(res);
     } catch (e) {
       console.error(e);
     }
-  };
+  }, []);
+
+  // Fetch dataset preview and SWaT information
+  useEffect(() => {
+    loadPreview();
+    api.getSwatInfo().then(setSwatDetails).catch(() => {});
+  }, [datasetInfo.dataset_name, loadPreview]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -59,16 +53,20 @@ export const DatasetsPage: React.FC<DatasetsPageProps> = ({
     setIsUploading(true);
     setUploadError('');
     setUploadSuccess('');
+    setUploadDiagnostics(null);
 
     try {
       const res = await api.uploadCSV(file);
-      setUploadSuccess(`Successfully uploaded '${file.name}' with ${res.row_count} rows.`);
+      setUploadSuccess(`Successfully uploaded '${file.name}' with ${res.row_count} rows.` + (res.transposed ? ' (Auto-transposed from sensor-oriented format)' : ''));
+      setUploadDiagnostics(null);
       onRefreshDataset();
       loadPreview();
     } catch (err: any) {
       setUploadError(err.message || 'CSV upload failed');
+      setUploadDiagnostics(err.diagnostics || null);
     } finally {
       setIsUploading(false);
+      e.target.value = '';
     }
   };
 
@@ -76,22 +74,26 @@ export const DatasetsPage: React.FC<DatasetsPageProps> = ({
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
-    if (!file.name.endsWith('.csv')) {
-      setUploadError('Only CSV files are supported.');
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      setUploadError('Only CSV (.csv) files are supported.');
+      setUploadDiagnostics(null);
       return;
     }
 
     setIsUploading(true);
     setUploadError('');
     setUploadSuccess('');
+    setUploadDiagnostics(null);
 
     try {
       const res = await api.uploadCSV(file);
-      setUploadSuccess(`Successfully uploaded '${file.name}' with ${res.row_count} rows.`);
+      setUploadSuccess(`Successfully uploaded '${file.name}' with ${res.row_count} rows.` + (res.transposed ? ' (Auto-transposed from sensor-oriented format)' : ''));
+      setUploadDiagnostics(null);
       onRefreshDataset();
       loadPreview();
     } catch (err: any) {
       setUploadError(err.message || 'CSV upload failed');
+      setUploadDiagnostics(err.diagnostics || null);
     } finally {
       setIsUploading(false);
     }
@@ -118,7 +120,7 @@ export const DatasetsPage: React.FC<DatasetsPageProps> = ({
     let updated: string[];
     if (selectedSensorFeatures.includes(col)) {
       if (selectedSensorFeatures.length <= 2) {
-        alert("At least 2 sensor features are required for multivariate analysis.");
+        setUploadError("At least 2 sensor features are required for multivariate analysis.");
         return;
       }
       updated = selectedSensorFeatures.filter(f => f !== col);
@@ -169,12 +171,119 @@ export const DatasetsPage: React.FC<DatasetsPageProps> = ({
       )}
 
       {uploadError && (
-        <div className="p-3.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-xs text-rose-300 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-            <span>{uploadError}</span>
+        <div className="space-y-4">
+          <div className="p-3.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-xs text-rose-300 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+              <span>{uploadError}</span>
+            </div>
+            <button 
+              onClick={() => { setUploadError(''); setUploadDiagnostics(null); }} 
+              className="text-rose-400 hover:text-white"
+            >
+              &times;
+            </button>
           </div>
-          <button onClick={() => setUploadError('')} className="text-rose-400 hover:text-white">&times;</button>
+
+          {/* Dedicated Upload Diagnostics Panel (Distinct from Active Dataset) */}
+          {uploadDiagnostics && (
+            <div className="p-5 rounded-2xl bg-slate-900/90 border border-rose-500/30 text-xs text-slate-300 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-800 gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
+                  <span className="font-bold text-white uppercase tracking-wider text-[11px]">
+                    Uploaded File Diagnostics: <span className="font-mono text-cyan-300">{uploadDiagnostics.filename}</span>
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded">
+                  {uploadDiagnostics.file_size_bytes?.toLocaleString()} bytes &bull; {uploadDiagnostics.encoding} &bull; delimiter: '{uploadDiagnostics.delimiter}'
+                </span>
+              </div>
+
+              {/* 4 Diagnostics Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
+                  <span className="text-[10px] text-slate-400 block mb-0.5">Parsed Observations</span>
+                  <div className={`text-lg font-bold font-mono ${uploadDiagnostics.parsed_rows < 50 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                    {uploadDiagnostics.parsed_rows}
+                  </div>
+                  <span className="text-[9px] text-slate-500">Requires &ge; 50 rows</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
+                  <span className="text-[10px] text-slate-400 block mb-0.5">Parsed Columns</span>
+                  <div className="text-lg font-bold font-mono text-white">
+                    {uploadDiagnostics.parsed_columns}
+                  </div>
+                  <span className="text-[9px] text-slate-500">Total detected headers</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
+                  <span className="text-[10px] text-slate-400 block mb-0.5">Numeric Sensors</span>
+                  <div className={`text-lg font-bold font-mono ${uploadDiagnostics.numeric_feature_count < 2 ? 'text-rose-400' : 'text-cyan-400'}`}>
+                    {uploadDiagnostics.numeric_feature_count}
+                  </div>
+                  <span className="text-[9px] text-slate-500">Requires &ge; 2 channels</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
+                  <span className="text-[10px] text-slate-400 block mb-0.5">Timestamp Detection</span>
+                  <div className="text-sm font-bold font-mono text-purple-300 truncate" title={uploadDiagnostics.timestamp_column || 'None'}>
+                    {uploadDiagnostics.timestamp_detected ? uploadDiagnostics.timestamp_column : 'None'}
+                  </div>
+                  <span className="text-[9px] text-slate-500">
+                    {uploadDiagnostics.timestamp_detected ? 'Detected in headers' : 'Not detected (auto-indexable)'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Sample Parsed Structure Preview */}
+              {uploadDiagnostics.sample_structure && uploadDiagnostics.sample_structure.length > 0 && (
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
+                    Sample Structure Extracted from Upload (First {uploadDiagnostics.sample_structure.length} Rows):
+                  </span>
+                  <div className="overflow-x-auto rounded-lg border border-slate-800 bg-slate-950">
+                    <table className="w-full text-[10px] font-mono">
+                      <thead className="bg-slate-900/90 text-slate-400 border-b border-slate-800">
+                        <tr>
+                          {Object.keys(uploadDiagnostics.sample_structure[0]).slice(0, 6).map((k) => (
+                            <th key={k} className="p-1.5 text-left font-semibold">{k}</th>
+                          ))}
+                          {Object.keys(uploadDiagnostics.sample_structure[0]).length > 6 && (
+                            <th className="p-1.5 text-left text-slate-500 font-normal">+ {Object.keys(uploadDiagnostics.sample_structure[0]).length - 6} more</th>
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800/60">
+                        {uploadDiagnostics.sample_structure.map((row: any, i: number) => (
+                          <tr key={i} className="hover:bg-slate-900/40">
+                            {Object.keys(uploadDiagnostics.sample_structure[0]).slice(0, 6).map((k) => (
+                              <td key={k} className="p-1.5 text-slate-300 truncate max-w-[120px]">{String(row[k] ?? '')}</td>
+                            ))}
+                            {Object.keys(uploadDiagnostics.sample_structure[0]).length > 6 && (
+                              <td className="p-1.5 text-slate-600">...</td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Suggested Action Box */}
+              <div className="p-3 rounded-xl bg-amber-950/30 border border-amber-500/30 flex items-start gap-2.5">
+                <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold text-amber-300 block text-[11px] mb-0.5">Suggested Corrective Action</span>
+                  <p className="text-[11px] text-amber-200/90 leading-relaxed">
+                    {uploadDiagnostics.suggested_action}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -2,15 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   BarChart3, 
   Download, 
-  Layers, 
   Sparkles, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Clock, 
-  Zap, 
-  HelpCircle,
-  FileSpreadsheet,
-  Info
+  FileSpreadsheet
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -36,11 +29,7 @@ export const EvaluationPage: React.FC<EvaluationPageProps> = ({
   const [metrics, setMetrics] = useState<BenchmarkMetric[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    loadBenchmark();
-  }, [datasetName]);
-
-  const loadBenchmark = async () => {
+  const loadBenchmark = React.useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.getEvaluationBenchmark();
@@ -50,7 +39,11 @@ export const EvaluationPage: React.FC<EvaluationPageProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadBenchmark();
+  }, [datasetName, loadBenchmark]);
 
   const handleExportCSV = () => {
     window.open(api.getExportCsvUrl(), '_blank');
@@ -134,7 +127,12 @@ export const EvaluationPage: React.FC<EvaluationPageProps> = ({
         </div>
 
         <div className="overflow-x-auto rounded-xl border border-trio-border">
-          <table className="w-full text-left text-xs font-mono">
+          {loading && metrics.length === 0 ? (
+            <div className="py-12 text-center text-trio-muted text-xs animate-pulse">
+              Computing empirical benchmark metrics across test partitions...
+            </div>
+          ) : (
+            <table className="w-full text-left text-xs font-mono">
             <thead className="bg-slate-900/80 text-trio-muted border-b border-trio-border">
               <tr>
                 <th className="py-3 px-3.5">Algorithm</th>
@@ -185,6 +183,7 @@ export const EvaluationPage: React.FC<EvaluationPageProps> = ({
               })}
             </tbody>
           </table>
+          )}
         </div>
 
         <div className="mt-3 text-[11px] text-slate-500 flex flex-wrap gap-4">

@@ -3,14 +3,8 @@ import {
   Compass, 
   CheckCircle2, 
   Clock, 
-  AlertTriangle, 
   XCircle, 
-  ChevronRight, 
-  Sparkles, 
-  Layers, 
-  HelpCircle, 
-  ShieldCheck,
-  TrendingUp,
+  Sparkles,
   BarChart2
 } from 'lucide-react';
 import { api, DiscoveryCandidateItem } from '../../services/api';

@@ -11,24 +11,19 @@ import {
   XAxis, 
   YAxis, 
   Tooltip, 
-  CartesianGrid, 
-  Legend 
+  CartesianGrid
 } from 'recharts';
 import { 
   Activity, 
   Layers, 
   Compass, 
   CheckCircle2, 
-  Database, 
-  Cpu, 
-  AlertTriangle, 
   ArrowUpRight, 
   ShieldAlert,
-  Server,
-  Zap,
-  Info
+  Server
 } from 'lucide-react';
 import { OverviewData } from '../../services/api';
+import { TriMemoryPipelineMonitor } from '../common/TriMemoryPipelineMonitor';
 
 interface OverviewPageProps {
   data: OverviewData;
@@ -36,6 +31,7 @@ interface OverviewPageProps {
 }
 
 const STATE_COLORS = ['#22D3EE', '#8B5CF6', '#34D399', '#F59E0B', '#F43F5E'];
+const SENSOR_PALETTE = ['#22D3EE', '#F59E0B', '#8B5CF6', '#34D399', '#EC4899', '#38BDF8'];
 
 export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) => {
   const { 
@@ -49,6 +45,11 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) 
     dataset_name,
     is_simulated
   } = data;
+
+  const sensorKeys = React.useMemo(() => {
+    if (!sensor_trends || sensor_trends.length === 0) return [];
+    return Object.keys(sensor_trends[0]).filter(k => k !== 'timestamp');
+  }, [sensor_trends]);
 
   return (
     <div className="space-y-6">
@@ -153,28 +154,24 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Multi-Sensor Activity Timeline (2 Cols) */}
         <div className="lg:col-span-2 p-5 rounded-xl bg-trio-card/90 border border-trio-border">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
             <div>
               <h3 className="text-xs font-bold uppercase tracking-wider text-white">
                 Multi-Sensor Physical Dynamics Timeline
               </h3>
               <p className="text-[11px] text-trio-muted">
-                Inflow (FIT101), Differential Pressure (DPIT301), and Dosing (FIT201)
+                {sensorKeys.length > 0 
+                  ? `Dynamic Sensor Channels: ${sensorKeys.slice(0, 4).join(', ')}${sensorKeys.length > 4 ? ` (+${sensorKeys.length - 4} more)` : ''}`
+                  : 'Multi-channel real-time telemetry'}
               </p>
             </div>
-            <div className="flex items-center gap-3 text-[11px] font-mono">
-              <span className="flex items-center gap-1 text-trio-cyan">
-                <span className="w-2 h-2 rounded-full bg-trio-cyan inline-block" />
-                FIT101
-              </span>
-              <span className="flex items-center gap-1 text-trio-amber">
-                <span className="w-2 h-2 rounded-full bg-trio-amber inline-block" />
-                DPIT301
-              </span>
-              <span className="flex items-center gap-1 text-trio-purple">
-                <span className="w-2 h-2 rounded-full bg-trio-purple inline-block" />
-                FIT201
-              </span>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[11px] font-mono">
+              {sensorKeys.slice(0, 4).map((key, idx) => (
+                <span key={key} className="flex items-center gap-1" style={{ color: SENSOR_PALETTE[idx % SENSOR_PALETTE.length] }}>
+                  <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: SENSOR_PALETTE[idx % SENSOR_PALETTE.length] }} />
+                  {key}
+                </span>
+              ))}
             </div>
           </div>
 
@@ -182,14 +179,15 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) 
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={sensor_trends}>
                 <defs>
-                  <linearGradient id="colorFit" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#22D3EE" stopOpacity={0.35}/>
-                    <stop offset="95%" stopColor="#22D3EE" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="colorDpit" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.35}/>
-                    <stop offset="95%" stopColor="#F59E0B" stopOpacity={0}/>
-                  </linearGradient>
+                  {sensorKeys.slice(0, 4).map((key, idx) => {
+                    const color = SENSOR_PALETTE[idx % SENSOR_PALETTE.length];
+                    return (
+                      <linearGradient key={`grad-${key}`} id={`grad-${key}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={color} stopOpacity={0.35}/>
+                        <stop offset="95%" stopColor={color} stopOpacity={0}/>
+                      </linearGradient>
+                    );
+                  })}
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
                 <XAxis dataKey="timestamp" stroke="#64748B" tick={{ fontSize: 10 }} />
@@ -197,9 +195,21 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) 
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#111C30', borderColor: '#1E293B', borderRadius: '8px', fontSize: '11px' }}
                 />
-                <Area type="monotone" dataKey="FIT101" stroke="#22D3EE" strokeWidth={2} fillOpacity={1} fill="url(#colorFit)" name="FIT101 (Inflow m3/h)" />
-                <Area type="monotone" dataKey="DPIT301" stroke="#F59E0B" strokeWidth={2} fillOpacity={1} fill="url(#colorDpit)" name="DPIT301 (Pressure bar)" />
-                <Line type="monotone" dataKey="FIT201" stroke="#8B5CF6" strokeWidth={1.5} dot={false} name="FIT201 (Dosing L/min)" />
+                {sensorKeys.slice(0, 4).map((key, idx) => {
+                  const color = SENSOR_PALETTE[idx % SENSOR_PALETTE.length];
+                  return (
+                    <Area 
+                      key={key} 
+                      type="monotone" 
+                      dataKey={key} 
+                      stroke={color} 
+                      strokeWidth={1.75} 
+                      fillOpacity={1} 
+                      fill={`url(#grad-${key})`} 
+                      name={key} 
+                    />
+                  );
+                })}
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -231,7 +241,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) 
                   paddingAngle={4}
                   dataKey="count"
                 >
-                  {state_distribution.map((entry, index) => (
+                  {state_distribution.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={STATE_COLORS[index % STATE_COLORS.length]} />
                   ))}
                 </Pie>
@@ -324,14 +334,29 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) 
         {/* Tri-Memory Utilization & Engine Health (1 Col) */}
         <div className="p-5 rounded-xl bg-trio-card/90 border border-trio-border flex flex-col justify-between">
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-white mb-2">
-              Tri-Memory Throughput
-            </h3>
-            <p className="text-[11px] text-trio-muted mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-white">
+                Tri-Memory Throughput
+              </h3>
+              <span className="text-[10px] text-trio-cyan font-mono flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-trio-cyan"></span>
+                Active Engine
+              </span>
+            </div>
+            <p className="text-[11px] text-trio-muted mb-3">
               Real-time buffer capacity and accumulated evidence.
             </p>
 
-            <div className="space-y-4">
+            {/* Industrial Tri-Memory Pipeline Monitor */}
+            <div className="mb-4">
+              <TriMemoryPipelineMonitor
+                stmUtilization={tri_memory_activity.stm_utilization}
+                ltmPrototypes={tri_memory_activity.ltm_prototypes}
+                cmEvidence={tri_memory_activity.cm_accumulated}
+              />
+            </div>
+
+            <div className="space-y-3.5">
               {/* STM Meter */}
               <div>
                 <div className="flex justify-between text-xs mb-1">

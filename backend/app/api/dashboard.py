@@ -5,6 +5,7 @@ Dashboard and Live Stream Overview API Endpoints
 from fastapi import APIRouter
 from typing import Dict, Any, List
 import numpy as np
+import pandas as pd
 
 from app.services.state_service import state_service
 
@@ -55,18 +56,20 @@ def get_dashboard_overview():
             
     # 3. Multi-Sensor Activity Timeline (Sample recent points with raw sensor values)
     sensor_trends = []
-    if dataset is not None:
+    if dataset is not None and len(dataset) > 0:
         step = max(1, len(dataset) // 50)
+        active_features = state_service.feature_cols[:6]
         for i in range(0, len(dataset), step):
             row = dataset.iloc[i]
             point = {
                 "timestamp": str(row.get("timestamp", f"T{i}"))[-8:],
-                "FIT101": float(row["FIT101"]) if "FIT101" in row else 0.0,
-                "DPIT301": float(row["DPIT301"]) if "DPIT301" in row else 0.0,
-                "FIT201": float(row["FIT201"]) if "FIT201" in row else 0.0,
-                "AIT202": float(row["AIT202"]) if "AIT202" in row else 0.0,
-                "LIT101": float(row["LIT101"]) if "LIT101" in row else 0.0,
             }
+            for col in active_features:
+                try:
+                    val = row.get(col, 0.0)
+                    point[col] = float(val) if pd.notnull(val) else 0.0
+                except (ValueError, TypeError):
+                    point[col] = 0.0
             sensor_trends.append(point)
 
     # 4. Tri-Memory Activity gauges

@@ -4,14 +4,7 @@ import {
   Layers, 
   Compass, 
   Activity, 
-  HelpCircle, 
-  ArrowRight, 
-  Zap, 
-  ShieldAlert, 
-  CheckCircle2, 
-  Sparkles,
-  Info,
-  ChevronRight
+  Info
 } from 'lucide-react';
 import { api } from '../../services/api';
 
@@ -20,14 +13,8 @@ export const TriMemoryPage: React.FC = () => {
   const [stmData, setStmData] = useState<any>(null);
   const [ltmData, setLtmData] = useState<any>(null);
   const [cmData, setCmData] = useState<any>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    loadMemoryData();
-  }, []);
 
   const loadMemoryData = async () => {
-    setLoading(true);
     try {
       const [stmRes, ltmRes, cmRes] = await Promise.all([
         api.getStmDetails().catch(() => null),
@@ -39,10 +26,12 @@ export const TriMemoryPage: React.FC = () => {
       setCmData(cmRes);
     } catch (e) {
       console.error(e);
-    } finally {
-      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadMemoryData();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -379,8 +368,15 @@ export const TriMemoryPage: React.FC = () => {
                     <td className="py-2 px-3 text-purple-300">{rec.distance_score}</td>
                     <td className="py-2 px-3 text-trio-cyan">{rec.temporal_score}</td>
                     <td className="py-2 px-3 text-rose-300">{rec.anomaly_score}</td>
-                    <td className="py-2 px-3 text-slate-400">
-                      {rec.DPIT301 ? `DPIT301: ${rec.DPIT301}, FIT101: ${rec.FIT101}` : 'Multi-sensor anomaly'}
+                    <td className="py-2 px-3 text-slate-400 font-mono text-[11px]">
+                      {(() => {
+                        const skip = new Set(['index', 'timestamp', 'contradiction_score', 'distance_score', 'temporal_score', 'anomaly_score']);
+                        const feats = Object.keys(rec).filter(k => !skip.has(k));
+                        if (feats.length > 0) {
+                          return feats.slice(0, 3).map(f => `${f}: ${rec[f]}`).join(', ') + (feats.length > 3 ? '...' : '');
+                        }
+                        return 'Multi-sensor anomaly';
+                      })()}
                     </td>
                   </tr>
                 ))}

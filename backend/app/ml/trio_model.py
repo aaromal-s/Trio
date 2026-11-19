@@ -27,6 +27,10 @@ class ShortTermMemory:
     def push(self, observation: np.ndarray, timestamp: str):
         self.buffer.append(observation)
         self.timestamps.append(timestamp)
+
+    def clear(self):
+        self.buffer.clear()
+        self.timestamps.clear()
         
     def is_ready(self) -> bool:
         return len(self.buffer) >= 3
@@ -149,6 +153,9 @@ class ContradictionMemory:
         self.records.append(record)
         if len(self.records) > self.max_records:
             self.records.pop(0)
+
+    def clear(self):
+        self.records.clear()
 
     def get_points(self) -> np.ndarray:
         if not self.records:
@@ -273,14 +280,20 @@ class TRIOModel:
     def train(self, X_train: np.ndarray, feature_names: List[str], n_known_clusters: int = 3):
         """
         Trains LTM on normal baseline operational data.
+        Clears STM and CM memory buffers so new datasets with different feature dimensions
+        adapt cleanly without shape-mismatch broadcast errors.
         """
-        self.feature_names = feature_names
+        self.feature_names = list(feature_names)
+        self.stm.clear()
+        self.cm.clear()
+        self.candidates = []
         
         # 1. Fit LTM known prototypes
         self.ltm.fit_known_states(X_train, n_clusters=n_known_clusters)
         
         # 2. Fit unsupervised density/anomaly baseline
         self.iso_forest.fit(X_train)
+        self.iso_threshold = float(np.percentile(self.iso_forest.score_samples(X_train), 5))
         
         self.is_trained = True
         self.model_version = f"v{datetime.now().strftime('%Y%m%d.%H%M')}"
@@ -296,27 +309,29 @@ class TRIOModel:
         Computes transparent contradiction score:
         C = alpha * D + beta * T + gamma * A
         """
-        # Component 1: Distance from known LTM prototypes (D)
-        min_dist, _ = self.ltm.min_distance(observation)
-        # Normalized via sigmoid-like transformation
-        D = 1.0 - np.exp(-0.8 * min_dist)
+        # Component 1: Distance from known LTM prototypes (D) normalized by cluster dispersion
+        min_dist, closest_idx = self.ltm.min_distance(observation)
+        radius = self.ltm.state_radii[closest_idx] if (closest_idx >= 0 and closest_idx < len(self.ltm.state_radii)) else 1.0
+        ratio = min_dist / max(radius, 0.1)
+        D = 1.0 - np.exp(-0.5 * max(0.0, ratio - 0.75)**2)
         D = float(np.clip(D, 0.0, 1.0))
         
         # Component 2: Temporal Inconsistency vs STM moving average (T)
         if len(stm_window) >= 2:
             stm_mean = np.mean(stm_window, axis=0)
             stm_diff = float(np.linalg.norm(observation - stm_mean))
-            T = 1.0 - np.exp(-1.0 * stm_diff)
+            T = 1.0 - np.exp(-0.4 * max(0.0, stm_diff - 0.5)**2)
             T = float(np.clip(T, 0.0, 1.0))
         else:
             T = 0.0
             
-        # Component 3: Anomaly score from baseline distribution (A)
+        # Component 3: Anomaly score from baseline distribution (A) calibrated against training 5th percentile
         if precomputed_a is not None:
             A = precomputed_a
         else:
             raw_score = float(self.iso_forest.score_samples([observation])[0])
-            A = 1.0 / (1.0 + np.exp(6.0 * (raw_score + 0.4)))
+            thresh = getattr(self, "iso_threshold", -0.53)
+            A = 1.0 / (1.0 + np.exp(25.0 * (raw_score - thresh)))
             A = float(np.clip(A, 0.0, 1.0))
         
         # Final combined Contradiction Score
@@ -346,7 +361,8 @@ class TRIOModel:
         
         # Batch precompute anomaly scores for fast vectorization
         raw_iso_scores = self.iso_forest.score_samples(X_test)
-        batch_A = 1.0 / (1.0 + np.exp(6.0 * (raw_iso_scores + 0.4)))
+        thresh = getattr(self, "iso_threshold", -0.53)
+        batch_A = 1.0 / (1.0 + np.exp(25.0 * (raw_iso_scores - thresh)))
         batch_A = np.clip(batch_A, 0.0, 1.0)
         
         for idx in range(n_obs):
