@@ -93,7 +93,7 @@ if is_production:
             allowed_origins = settings.PROD_CORS_ORIGINS
     else:
         allowed_origins = settings.PROD_CORS_ORIGINS
-    allow_origin_regex = None
+    allow_origin_regex = r"^https://.*\.vercel\.app$"
 else:
     allowed_origins = settings.DEV_CORS_ORIGINS
     allow_origin_regex = r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$"
