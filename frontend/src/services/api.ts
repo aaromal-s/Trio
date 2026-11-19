@@ -15,7 +15,10 @@ function resolveApiBaseUrl(): string {
     '/api'
   ).trim();
 
-  if (envUrl === '/api') return '/api';
+  // Guard against unconfigured or placeholder URLs
+  if (!envUrl || envUrl === '/api' || envUrl.includes('<') || envUrl.includes('your-deployed-backend-url')) {
+    return '/api';
+  }
 
   const stripped = envUrl.replace(/\/+$/, '');
   if (!stripped.endsWith('/api')) {
