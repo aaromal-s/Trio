@@ -12,8 +12,6 @@ import {
   Settings, 
   BookOpen, 
   LogOut,
-  Sun,
-  Moon,
   Menu,
   X
 } from 'lucide-react';
@@ -34,8 +32,6 @@ interface NavbarProps {
   onOpenViva: () => void;
   onLogout: () => void;
   userEmail: string;
-  currentTheme: 'dark' | 'light';
-  onToggleTheme: () => void;
   onToggleMobileMenu?: () => void;
   isMobileMenuOpen?: boolean;
   refreshInterval?: number;
@@ -58,8 +54,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenViva,
   onLogout,
   userEmail,
-  currentTheme,
-  onToggleTheme,
   onToggleMobileMenu,
   isMobileMenuOpen = false,
   refreshInterval = 5,
@@ -185,19 +179,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse ml-1" title={fetchError} />
           )}
         </div>
-
-        {/* Light / Dark Theme Toggle Button */}
-        <button
-          onClick={onToggleTheme}
-          className="p-2 text-trio-muted hover:text-trio-text hover:bg-trio-card rounded-lg transition-colors border border-trio-border"
-          title={`Switch to ${currentTheme === 'dark' ? 'Light' : 'Dark'} Theme`}
-        >
-          {currentTheme === 'dark' ? (
-            <Sun className="w-4 h-4 text-trio-amber" />
-          ) : (
-            <Moon className="w-4 h-4 text-trio-purple" />
-          )}
-        </button>
 
         {/* Notifications Icon */}
         <div className="relative">

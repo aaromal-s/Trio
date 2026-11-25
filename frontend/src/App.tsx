@@ -66,11 +66,6 @@ function AppContent() {
   const [userEmail, setUserEmail] = useState<string>('evaluator@university.edu');
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
-  // Theme Management: 'dark' | 'light'
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    return (localStorage.getItem('trio_theme') as 'dark' | 'light') || 'dark';
-  });
-
   // Mobile drawer state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
 
@@ -84,17 +79,6 @@ function AppContent() {
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
   const [isVivaOpen, setIsVivaOpen] = useState<boolean>(false);
-
-  // Apply Theme class to document root
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'light') {
-      root.classList.add('light');
-    } else {
-      root.classList.remove('light');
-    }
-    localStorage.setItem('trio_theme', theme);
-  }, [theme]);
 
   // Primary Data Fetching
   const fetchAllData = useCallback(async () => {
@@ -145,21 +129,21 @@ function AppContent() {
   // Render Landing Page
   if (currentView === 'landing') {
     return (
-      <div className={theme === 'light' ? 'light' : ''}>
+      <>
         <LandingPage
           onEnterDemo={() => setCurrentView('overview')}
           onOpenLogin={() => setCurrentView('login')}
           onOpenViva={() => setIsVivaOpen(true)}
         />
         <VivaGuideModal isOpen={isVivaOpen} onClose={() => setIsVivaOpen(false)} />
-      </div>
+      </>
     );
   }
 
   // Render Login Page
   if (currentView === 'login') {
     return (
-      <div className={theme === 'light' ? 'light' : ''}>
+      <>
         <LoginPage
           initialResetToken={resetToken}
           onLoginSuccess={(identifier) => {
@@ -173,13 +157,13 @@ function AppContent() {
           onBackToLanding={() => setCurrentView('landing')}
         />
         <VivaGuideModal isOpen={isVivaOpen} onClose={() => setIsVivaOpen(false)} />
-      </div>
+      </>
     );
   }
 
   // Render Main Dashboard Shell
   return (
-    <div className={`min-h-screen bg-trio-bg text-trio-text flex flex-col selection:bg-trio-cyan selection:text-black ${theme === 'light' ? 'light' : ''}`}>
+    <div className="min-h-screen bg-trio-bg text-trio-text flex flex-col selection:bg-trio-cyan selection:text-black">
       {/* Top Navbar with Centralized Telemetry Status */}
       <Navbar
         currentView={currentView}
@@ -200,8 +184,6 @@ function AppContent() {
         onOpenViva={() => setIsVivaOpen(true)}
         onLogout={() => setCurrentView('login')}
         userEmail={userProfile?.email || userEmail}
-        currentTheme={theme}
-        onToggleTheme={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
         onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         isMobileMenuOpen={isMobileMenuOpen}
       />
@@ -269,8 +251,6 @@ function AppContent() {
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         onResetDemo={handleResetDemo}
-        currentTheme={theme}
-        onThemeChange={(newTheme) => setTheme(newTheme)}
         refreshInterval={intervalSec}
         onRefreshIntervalChange={(sec) => {
           if (sec === 0) {

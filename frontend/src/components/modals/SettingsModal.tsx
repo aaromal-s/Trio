@@ -4,10 +4,7 @@ import {
   X, 
   Server, 
   RefreshCw, 
-  Check, 
-  Sun, 
-  Moon, 
-  Laptop, 
+  SlidersHorizontal,
   Activity, 
   CheckCircle2, 
   Globe,
@@ -20,8 +17,6 @@ interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onResetDemo: () => void;
-  currentTheme: 'dark' | 'light';
-  onThemeChange: (theme: 'dark' | 'light') => void;
   refreshInterval?: number;
   onRefreshIntervalChange?: (seconds: number) => void;
   isPollingPaused?: boolean;
@@ -31,19 +26,13 @@ interface SettingsModalProps {
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
-  currentTheme,
-  onThemeChange,
   refreshInterval = 5,
   onRefreshIntervalChange,
   isPollingPaused: propPollingPaused
 }) => {
   const [activeSection, setActiveSection] = useState<'appearance' | 'telemetry' | 'backend' | 'regional'>('appearance');
 
-  // Appearance
-  const [themeMode, setThemeMode] = useState<'dark' | 'light' | 'system'>(() => {
-    return (localStorage.getItem('trio_theme_mode') as any) || currentTheme;
-  });
-
+  // Interface preferences
   const [dashboardDensity, setDashboardDensity] = useState<'comfortable' | 'compact'>(() => {
     return (localStorage.getItem('trio_density') as any) || 'comfortable';
   });
@@ -86,19 +75,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const [savedToast, setSavedToast] = useState(false);
 
-  useEffect(() => {
-    if (themeMode === 'system') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      onThemeChange(prefersDark ? 'dark' : 'light');
-    } else {
-      onThemeChange(themeMode);
-    }
-  }, [themeMode, onThemeChange]);
-
   if (!isOpen) return null;
 
   const handleSaveAll = () => {
-    localStorage.setItem('trio_theme_mode', themeMode);
     localStorage.setItem('trio_density', dashboardDensity);
     localStorage.setItem('trio_notifs', String(notificationsEnabled));
     localStorage.setItem('trio_polling_paused', String(isPollingPaused));
@@ -152,7 +131,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         {/* Navigation Tabs */}
         <div className="px-6 border-b border-trio-border flex gap-6 bg-trio-bg/50">
           {[
-            { id: 'appearance', label: 'Appearance', icon: Sun },
+            { id: 'appearance', label: 'Interface', icon: SlidersHorizontal },
             { id: 'telemetry', label: 'Telemetry Stream', icon: Activity },
             { id: 'backend', label: 'Backend API', icon: Server },
             { id: 'regional', label: 'Regional', icon: Globe },
@@ -185,44 +164,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           )}
 
-          {/* 1. APPEARANCE */}
+          {/* 1. INTERFACE PREFERENCES */}
           {activeSection === 'appearance' && (
             <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-white mb-1">Theme Mode</label>
-                <p className="text-[11px] text-trio-muted mb-3">Select your visual interface experience</p>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { id: 'dark', label: 'Dark Slate', icon: Moon, desc: 'High-contrast industrial' },
-                    { id: 'light', label: 'Enterprise Light', icon: Sun, desc: 'Daylight clean view' },
-                    { id: 'system', label: 'System Default', icon: Laptop, desc: 'Syncs with OS' },
-                  ].map((mode) => {
-                    const Icon = mode.icon;
-                    const isSelected = themeMode === mode.id;
-                    return (
-                      <button
-                        key={mode.id}
-                        type="button"
-                        onClick={() => setThemeMode(mode.id as any)}
-                        className={`p-3 rounded-xl border text-left transition-all ${
-                          isSelected
-                            ? 'bg-cyan-950/40 border-cyan-500/60 text-white'
-                            : 'bg-slate-900/40 border-slate-800 text-trio-muted hover:text-white'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-1.5">
-                          <Icon className={`w-4 h-4 ${isSelected ? 'text-cyan-400' : 'text-slate-500'}`} />
-                          {isSelected && <Check className="w-3.5 h-3.5 text-cyan-400" />}
-                        </div>
-                        <div className="text-xs font-bold text-white">{mode.label}</div>
-                        <div className="text-[10px] text-slate-500 mt-0.5">{mode.desc}</div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="pt-3 border-t border-trio-border space-y-3">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-xs font-bold text-white">Dashboard Layout Density</div>
