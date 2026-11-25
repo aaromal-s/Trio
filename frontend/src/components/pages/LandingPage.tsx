@@ -101,11 +101,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.08 }}
-            className="font-display text-4xl sm:text-5xl lg:text-[4rem] font-bold tracking-tight text-white max-w-4xl leading-[1.08] mb-6"
+            className="font-display text-4xl sm:text-5xl lg:text-[4rem] font-bold tracking-[-0.025em] max-w-4xl leading-[1.12] mb-6"
           >
-            Discover What Your SCADA <br className="hidden sm:inline" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-200">
-              Has Never Seen Before.
+            <span className="text-transparent bg-clip-text bg-gradient-to-b from-white via-stone-100 to-stone-300">
+              See What Your SCADA
+            </span>{' '}
+            <br className="hidden sm:inline" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-400 to-yellow-200 drop-shadow-[0_0_28px_rgba(249,115,22,0.22)]">
+              Was Never Built to Catch.
             </span>
           </motion.h1>
 
@@ -114,10 +117,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.16 }}
-            className="text-sm sm:text-base text-stone-400 max-w-2xl leading-relaxed mb-8 font-normal"
+            className="text-sm sm:text-base text-stone-400 max-w-xl leading-relaxed mb-8 font-normal"
           >
-            An unsupervised tri-memory intelligence platform designed to eliminate false alarm fatigue, 
-            isolate baseline operating regimes, and characterize unknown physical states without labeled training data.
+            Unsupervised tri-memory AI that{' '}
+            <span className="text-stone-200 font-medium">eliminates alarm fatigue</span> and{' '}
+            <span className="text-stone-200 font-medium">isolates unknown failure regimes</span>{' '}
+            &mdash; with zero labeled training data.
           </motion.p>
 
           {/* Capability Metric Chips */}
