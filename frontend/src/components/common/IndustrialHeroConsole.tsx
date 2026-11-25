@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { 
   Activity, 
   Layers, 
@@ -55,63 +56,74 @@ export const IndustrialHeroConsole: React.FC = () => {
     }
   }[mode];
 
-  // Dynamic SVG Waveform points
-  const generateWaveform = (baseVal: number, amp: number, freq: number, spike: boolean) => {
-    const points: string[] = [];
+  // Dynamic SVG Waveform points + area polygon
+  const { linePoints, areaPoints, scanY } = React.useMemo(() => {
+    const baseVal = 45;
+    const amp = mode === 'cavitation' ? 22 : 12;
+    const freq = 0.4;
+    const spike = mode === 'transient';
+    const pts: string[] = [];
+    let currentScanY = baseVal;
+    const scanIndex = Math.round((tick / 100) * 27);
+
     for (let i = 0; i < 28; i++) {
       const x = (i / 27) * 440;
       let y = baseVal + Math.sin((i + tick) * freq) * amp;
-      if (spike && i === 18) y -= 36;
-      points.push(`${x},${y}`);
+      if (spike && i === 18) y -= 34;
+      pts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+      if (i === scanIndex) currentScanY = y;
     }
-    return points.join(' ');
-  };
+
+    const line = pts.join(' ');
+    const area = `0,90 ${line} 440,90`;
+    return { linePoints: line, areaPoints: area, scanY: currentScanY };
+  }, [mode, tick]);
+
+  const waveColor = mode === 'cavitation' ? '#f43f5e' : mode === 'transient' ? '#f59e0b' : '#22d3ee';
 
   return (
-    <div className="w-full rounded-2xl bg-slate-900/90 border border-slate-800 shadow-2xl overflow-hidden backdrop-blur-xl">
+    <div className="w-full rounded-2xl bg-[#0B1221]/95 border border-slate-700/60 shadow-[0_24px_80px_-16px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.08)] overflow-hidden backdrop-blur-2xl">
       {/* Console Top Control Bar */}
-      <div className="px-5 py-3.5 bg-slate-950/80 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
+      <div className="px-5 py-3.5 bg-slate-950/90 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]" />
-            <span className="font-mono text-xs font-semibold text-slate-200">SCADA STREAM INGESTION</span>
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-60" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)]" />
+            </span>
+            <span className="font-mono text-xs font-semibold tracking-wider text-slate-100">SCADA STREAM INGESTION</span>
           </div>
-          <span className="text-slate-600 font-mono text-xs hidden sm:inline">&bull;</span>
-          <span className="text-[11px] font-mono text-slate-400 hidden sm:inline">MetroPT3 Air Compressor &bull; 7 SCADA Channels</span>
+          <span className="text-slate-700 font-mono text-xs hidden sm:inline">&bull;</span>
+          <span className="text-[11px] font-mono text-slate-400 hidden sm:inline">MetroPT-3 Air Compressor &bull; 7 Channels</span>
         </div>
 
-        {/* Interactive Scenario Selector */}
-        <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-800 text-xs">
-          <button
-            onClick={() => setMode('normal')}
-            className={`px-2.5 py-1 rounded-md font-medium transition-all ${
-              mode === 'normal' 
-                ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30' 
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Normal Baseline
-          </button>
-          <button
-            onClick={() => setMode('cavitation')}
-            className={`px-2.5 py-1 rounded-md font-medium transition-all ${
-              mode === 'cavitation' 
-                ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30' 
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Novel Regime (Overheat)
-          </button>
-          <button
-            onClick={() => setMode('transient')}
-            className={`px-2.5 py-1 rounded-md font-medium transition-all ${
-              mode === 'transient' 
-                ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' 
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Transient Pulse (Noise)
-          </button>
+        {/* Interactive Scenario Selector with Animated Pill */}
+        <div className="flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800/90 text-xs">
+          {[
+            { id: 'normal', label: 'Normal Baseline', activeClass: 'text-cyan-300', bgClass: 'bg-cyan-500/15 border-cyan-500/40' },
+            { id: 'cavitation', label: 'Novel Regime (Overheat)', activeClass: 'text-rose-300', bgClass: 'bg-rose-500/15 border-rose-500/40' },
+            { id: 'transient', label: 'Transient Pulse (Noise)', activeClass: 'text-amber-300', bgClass: 'bg-amber-500/15 border-amber-500/40' },
+          ].map((tab) => {
+            const isActive = mode === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setMode(tab.id as SimulationMode)}
+                className={`relative px-3 py-1.5 rounded-lg font-medium transition-colors ${
+                  isActive ? tab.activeClass : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="hero-mode-pill"
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    className={`absolute inset-0 rounded-lg border ${tab.bgClass}`}
+                  />
+                )}
+                <span className="relative z-10">{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -201,49 +213,70 @@ export const IndustrialHeroConsole: React.FC = () => {
             </div>
 
             {/* Live Interactive Oscilloscope Waveform */}
-            <div className="relative h-44 rounded-xl bg-slate-950/70 border border-slate-800 p-3 overflow-hidden">
-              <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+            <div className="relative h-48 rounded-xl bg-[#060B14] border border-slate-800/90 p-3.5 overflow-hidden shadow-inner">
+              <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b22_1px,transparent_1px),linear-gradient(to_bottom,#1e293b22_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
               
               <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-2 relative z-10">
-                <span>CHANNEL: {activeSensor} &bull; SLIDING WINDOW N=30</span>
-                <span className="text-cyan-400">HISTORICAL HORIZON</span>
+                <span className="flex items-center gap-2">
+                  <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-200">CH: {activeSensor}</span>
+                  <span>SLIDING WINDOW N=30</span>
+                </span>
+                <span className="text-cyan-400 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                  LIVE TELEMETRY
+                </span>
               </div>
 
-              <svg className="w-full h-28 overflow-visible relative z-10" viewBox="0 0 440 90">
-                <defs>
-                  <linearGradient id="waveGlow" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.3" />
-                    <stop offset="100%" stopColor="#22d3ee" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
+              <div className="relative flex items-center h-32">
+                <div className="hidden sm:flex flex-col justify-between h-28 pr-2 text-[9px] font-mono text-slate-600 select-none">
+                  <span>+3&sigma;</span>
+                  <span>&mu;</span>
+                  <span>-3&sigma;</span>
+                </div>
 
-                {/* Grid guidelines */}
-                <line x1="0" y1="20" x2="440" y2="20" stroke="#1e293b" strokeDasharray="3 3" />
-                <line x1="0" y1="45" x2="440" y2="45" stroke="#334155" strokeDasharray="4 4" />
-                <line x1="0" y1="70" x2="440" y2="70" stroke="#1e293b" strokeDasharray="3 3" />
+                <svg className="w-full h-28 overflow-visible relative z-10" viewBox="0 0 440 90">
+                  <defs>
+                    <linearGradient id="waveGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor={waveColor} stopOpacity="0.32" />
+                      <stop offset="100%" stopColor={waveColor} stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
 
-                {/* Primary dynamic waveform */}
-                <polyline
-                  fill="none"
-                  stroke={mode === 'cavitation' ? '#f43f5e' : '#22d3ee'}
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  points={generateWaveform(45, mode === 'cavitation' ? 22 : 12, 0.4, mode === 'transient')}
-                />
+                  {/* Grid guidelines */}
+                  <line x1="0" y1="18" x2="440" y2="18" stroke="#1e293b" strokeDasharray="3 3" />
+                  <line x1="0" y1="45" x2="440" y2="45" stroke="#334155" strokeDasharray="4 4" />
+                  <line x1="0" y1="72" x2="440" y2="72" stroke="#1e293b" strokeDasharray="3 3" />
 
-                {/* Moving scanner line */}
-                <line
-                  x1={(tick * 4.4).toString()}
-                  y1="0"
-                  x2={(tick * 4.4).toString()}
-                  y2="90"
-                  stroke="#38bdf8"
-                  strokeWidth="1.5"
-                  strokeDasharray="2 2"
-                  opacity="0.8"
-                />
-              </svg>
+                  {/* Gradient area fill */}
+                  <polygon fill="url(#waveGlow)" points={areaPoints} />
+
+                  {/* Primary dynamic waveform */}
+                  <polyline
+                    fill="none"
+                    stroke={waveColor}
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    points={linePoints}
+                  />
+
+                  {/* Moving scanner line */}
+                  <line
+                    x1={(tick * 4.4).toString()}
+                    y1="0"
+                    x2={(tick * 4.4).toString()}
+                    y2="90"
+                    stroke={waveColor}
+                    strokeWidth="1.2"
+                    strokeDasharray="2 2"
+                    opacity="0.7"
+                  />
+
+                  {/* Glowing leading-edge cursor dot */}
+                  <circle cx={(tick * 4.4).toString()} cy={scanY} r="6" fill={waveColor} opacity="0.25" />
+                  <circle cx={(tick * 4.4).toString()} cy={scanY} r="3" fill={waveColor} stroke="#060B14" strokeWidth="1.5" />
+                </svg>
+              </div>
             </div>
           </div>
 
@@ -269,33 +302,33 @@ export const IndustrialHeroConsole: React.FC = () => {
                 </h4>
               </div>
               <div className="px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-[11px] font-mono text-cyan-400">
-                &tau; = 0.48
+                &tau; = 0.32
               </div>
             </div>
 
             {/* Contradiction Score Meter */}
-            <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 mb-5">
+            <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 mb-5 shadow-inner">
               <div className="flex items-center justify-between text-xs font-mono mb-2">
                 <span className="text-slate-300">C = &alpha;&bull;D + &beta;&bull;T + &gamma;&bull;A</span>
-                <span className={`text-base font-bold ${sensorData.score >= 0.48 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                <span className={`text-base font-bold tabular-nums ${sensorData.score >= 0.32 ? 'text-rose-400' : 'text-emerald-400'}`}>
                   {sensorData.score.toFixed(2)}
                 </span>
               </div>
 
               {/* Progress bar with threshold marker */}
-              <div className="relative w-full h-3 rounded-full bg-slate-950 overflow-hidden mb-2">
+              <div className="relative w-full h-3 rounded-full bg-slate-950 overflow-hidden mb-2 border border-slate-800">
                 <div 
-                  className={`h-full rounded-full transition-all duration-300 ${
-                    sensorData.score >= 0.48 ? 'bg-gradient-to-r from-amber-500 to-rose-500' : 'bg-gradient-to-r from-cyan-500 to-emerald-500'
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    sensorData.score >= 0.32 ? 'bg-gradient-to-r from-amber-500 to-rose-500' : 'bg-gradient-to-r from-cyan-500 to-emerald-500'
                   }`}
                   style={{ width: `${Math.min(100, sensorData.score * 100)}%` }}
                 />
-                <div className="absolute top-0 bottom-0 left-[48%] w-0.5 bg-white/60 shadow-[0_0_4px_white]" title="Threshold 0.48" />
+                <div className="absolute top-0 bottom-0 left-[32%] w-0.5 bg-white/80 shadow-[0_0_6px_white]" title="Threshold 0.32" />
               </div>
 
               <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
                 <span>0.00 (Familiar)</span>
-                <span className="text-white">&tau; = 0.48 Threshold</span>
+                <span className="text-white">&tau; = 0.32 Threshold</span>
                 <span>1.00 (Contradiction)</span>
               </div>
             </div>

@@ -53,34 +53,36 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) 
 
   return (
     <div className="space-y-6">
-      {/* Top Banner / Disclaimer */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl bg-trio-card/80 border border-trio-border gap-3">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-cyan-950/60 border border-trio-cyan/30 text-trio-cyan">
+      {/* Top Banner / Command Status */}
+      <div className="relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-trio-card via-trio-card/90 to-slate-900/90 border border-slate-700/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] gap-3">
+        <div className="absolute -right-12 -top-12 w-40 h-40 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="flex items-center gap-3.5 relative z-10">
+          <div className="p-2.5 rounded-xl bg-cyan-500/10 border border-trio-cyan/30 text-trio-cyan shadow-[0_0_15px_rgba(34,211,238,0.18)]">
             <Activity className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-white flex items-center gap-2">
+            <h2 className="font-display text-sm sm:text-base font-bold text-white flex flex-wrap items-center gap-2">
               <span>Operational Sensor Health &amp; Discovery Stream</span>
               {is_simulated ? (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-trio-amber border border-trio-amber/30 uppercase tracking-wider">
-                  Simulated Demo Data &bull; Not Real Factory Data
+                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-trio-amber border border-trio-amber/30 uppercase tracking-wider">
+                  Simulated Demo Data
                 </span>
               ) : (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-trio-green border border-trio-green/30 uppercase tracking-wider">
-                  Live Custom Data
+                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-trio-green border border-trio-green/30 uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Live Production Stream
                 </span>
               )}
             </h2>
             <p className="text-xs text-trio-muted mt-0.5">
-              Current Dataset: <strong className="text-slate-300">{dataset_name}</strong> &bull; Zero temporal data leakage enforced
+              Active Dataset: <strong className="text-slate-200 font-mono">{dataset_name}</strong> &bull; Zero temporal data leakage enforced
             </p>
           </div>
         </div>
 
         <button
           onClick={() => onNavigate('discoveries')}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-trio-cyan/10 hover:bg-trio-cyan/20 text-trio-cyan text-xs font-semibold border border-trio-cyan/30 transition-all shrink-0"
+          className="relative z-10 flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-trio-cyan/15 hover:bg-trio-cyan/25 text-cyan-300 text-xs font-semibold border border-trio-cyan/35 shadow-sm transition-all shrink-0"
         >
           <span>View All Discoveries</span>
           <ArrowUpRight className="w-3.5 h-3.5" />
@@ -90,60 +92,72 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) 
       {/* 4 Primary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1 */}
-        <div className="p-4 rounded-xl bg-trio-card/90 border border-trio-border hover:border-trio-cyan/40 transition-all">
-          <div className="flex items-center justify-between text-xs text-trio-muted mb-2">
-            <span>Observations Processed</span>
-            <Activity className="w-4 h-4 text-trio-cyan" />
+        <div className="relative overflow-hidden p-4 rounded-2xl glass-card group">
+          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-cyan-400/80 via-cyan-400/20 to-transparent" />
+          <div className="flex items-center justify-between text-xs text-trio-muted mb-2.5">
+            <span className="font-medium">Observations Processed</span>
+            <div className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-trio-cyan">
+              <Activity className="w-3.5 h-3.5" />
+            </div>
           </div>
-          <div className="text-2xl font-extrabold text-white font-mono">
+          <div className="text-2xl font-extrabold text-white font-mono tabular-nums tracking-tight">
             {kpis.observations_processed.toLocaleString()}
           </div>
-          <div className="text-[11px] text-trio-muted mt-1.5 flex items-center gap-1">
+          <div className="text-[11px] text-trio-muted mt-2 flex items-center gap-1.5">
             <span className="text-trio-green font-medium">&bull; 100% streamed</span>
             <span>through STM sliding buffer</span>
           </div>
         </div>
 
         {/* KPI 2 */}
-        <div className="p-4 rounded-xl bg-trio-card/90 border border-trio-border hover:border-trio-purple/40 transition-all">
-          <div className="flex items-center justify-between text-xs text-trio-muted mb-2">
-            <span>Known Operational States</span>
-            <Layers className="w-4 h-4 text-trio-purple" />
+        <div className="relative overflow-hidden p-4 rounded-2xl glass-card group">
+          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-purple-400/80 via-purple-400/20 to-transparent" />
+          <div className="flex items-center justify-between text-xs text-trio-muted mb-2.5">
+            <span className="font-medium">Known Operational States</span>
+            <div className="p-1.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-trio-purple">
+              <Layers className="w-3.5 h-3.5" />
+            </div>
           </div>
-          <div className="text-2xl font-extrabold text-white font-mono">
+          <div className="text-2xl font-extrabold text-white font-mono tabular-nums tracking-tight">
             {kpis.known_operational_states}
           </div>
-          <div className="text-[11px] text-trio-muted mt-1.5 flex items-center gap-1">
+          <div className="text-[11px] text-trio-muted mt-2 flex items-center gap-1.5">
             <span className="text-purple-300 font-medium">LTM Prototypes</span>
             <span>learned from baseline</span>
           </div>
         </div>
 
         {/* KPI 3 */}
-        <div className="p-4 rounded-xl bg-trio-card/90 border border-trio-border hover:border-trio-amber/40 transition-all">
-          <div className="flex items-center justify-between text-xs text-trio-muted mb-2">
-            <span>Unknown Candidates</span>
-            <Compass className="w-4 h-4 text-trio-amber" />
+        <div className="relative overflow-hidden p-4 rounded-2xl glass-card group">
+          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-amber-400/80 via-amber-400/20 to-transparent" />
+          <div className="flex items-center justify-between text-xs text-trio-muted mb-2.5">
+            <span className="font-medium">Unknown Candidates</span>
+            <div className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-trio-amber">
+              <Compass className="w-3.5 h-3.5" />
+            </div>
           </div>
-          <div className="text-2xl font-extrabold text-trio-amber font-mono">
+          <div className="text-2xl font-extrabold text-trio-amber font-mono tabular-nums tracking-tight">
             {kpis.unknown_candidates}
           </div>
-          <div className="text-[11px] text-trio-muted mt-1.5 flex items-center gap-1">
+          <div className="text-[11px] text-trio-muted mt-2 flex items-center gap-1.5">
             <span className="text-amber-400 font-medium">CM Clustered</span>
             <span>via DBSCAN density</span>
           </div>
         </div>
 
         {/* KPI 4 */}
-        <div className="p-4 rounded-xl bg-trio-card/90 border border-trio-border hover:border-trio-green/40 transition-all">
-          <div className="flex items-center justify-between text-xs text-trio-muted mb-2">
-            <span>Confirmed Discoveries</span>
-            <CheckCircle2 className="w-4 h-4 text-trio-green" />
+        <div className="relative overflow-hidden p-4 rounded-2xl glass-card group">
+          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-emerald-400/80 via-emerald-400/20 to-transparent" />
+          <div className="flex items-center justify-between text-xs text-trio-muted mb-2.5">
+            <span className="font-medium">Confirmed Discoveries</span>
+            <div className="p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-trio-green">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+            </div>
           </div>
-          <div className="text-2xl font-extrabold text-trio-green font-mono">
+          <div className="text-2xl font-extrabold text-trio-green font-mono tabular-nums tracking-tight">
             {kpis.confirmed_discoveries}
           </div>
-          <div className="text-[11px] text-trio-muted mt-1.5 flex items-center gap-1">
+          <div className="text-[11px] text-trio-muted mt-2 flex items-center gap-1.5">
             <span className="text-emerald-400 font-medium">Statistically verified</span>
             <span>novel operational regime</span>
           </div>

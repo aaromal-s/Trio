@@ -137,7 +137,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="flex items-center gap-2.5 sm:gap-3">
         {/* Digital Clock */}
         <div className="hidden sm:flex flex-col items-end pr-3 border-r border-trio-border">
-          <div className="flex items-center gap-1.5 font-mono text-xs font-semibold text-trio-text">
+          <div className="flex items-center gap-1.5 font-mono tabular-nums text-xs font-semibold text-trio-text">
             <Clock className="w-3.5 h-3.5 text-trio-cyan" />
             <span>{formattedTime}</span>
           </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { TrioLogo } from '../brand/TrioLogo';
 import { IndustrialHeroConsole } from '../common/IndustrialHeroConsole';
 import { 
@@ -30,7 +31,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   return (
     <div className="min-h-screen bg-trio-bg text-trio-text flex flex-col selection:bg-trio-cyan selection:text-black">
       {/* Top Enterprise Header */}
-      <header className="sticky top-0 z-50 w-full h-18 bg-trio-bg/85 backdrop-blur-xl border-b border-trio-border/60 px-6 sm:px-12 flex items-center justify-between">
+      <header className="sticky top-0 z-50 w-full h-18 bg-trio-bg/80 backdrop-blur-2xl border-b border-slate-800/70 px-6 sm:px-12 flex items-center justify-between shadow-[0_4px_30px_rgba(0,0,0,0.4)]">
         <TrioLogo size="md" subtitle="Learn. Remember. Discover." />
         
         <nav className="hidden md:flex items-center gap-8 text-xs font-semibold uppercase tracking-wider text-trio-muted">
@@ -43,7 +44,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="flex items-center gap-3">
           <button
             onClick={onOpenViva}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-900/60 hover:bg-slate-800/80 border border-slate-700/60 rounded-lg transition-all"
+            className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-900/70 hover:bg-slate-800/90 border border-slate-700/70 rounded-xl transition-all shadow-inner-specular"
             title="System Architecture & Mathematical Specifications"
           >
             <FileText className="w-3.5 h-3.5 text-cyan-400" />
@@ -52,14 +53,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           <button
             onClick={onOpenLogin}
-            className="px-3.5 py-1.5 text-xs font-medium text-trio-muted hover:text-white transition-colors"
+            className="px-3.5 py-2 text-xs font-medium text-trio-muted hover:text-white transition-colors"
           >
             Sign In
           </button>
 
           <button
             onClick={onEnterDemo}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-black bg-trio-cyan hover:bg-cyan-300 rounded-lg shadow-sm hover:shadow-glow-cyan transition-all"
+            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-950 bg-gradient-to-r from-cyan-400 to-sky-300 hover:from-cyan-300 hover:to-sky-200 rounded-xl shadow-[0_0_20px_-4px_rgba(34,211,238,0.5)] transition-all"
           >
             <span>Launch Platform</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -68,75 +69,113 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-16 pb-24 px-6 sm:px-12 max-w-7xl mx-auto flex flex-col items-center text-center overflow-hidden">
-        {/* Subtle Ambient Vignette */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-gradient-to-tr from-cyan-500/10 via-purple-500/5 to-transparent blur-[100px] pointer-events-none" />
+      <section className="relative pt-16 pb-24 px-6 sm:px-12 w-full overflow-hidden">
+        {/* Architectural Coordinate Grid + Radial Mask */}
+        <div
+          className="absolute inset-0 bg-scada-grid pointer-events-none opacity-80"
+          style={{ maskImage: 'radial-gradient(ellipse 75% 65% at 50% 25%, black 20%, transparent 100%)' }}
+        />
 
-        {/* Enterprise System Badge */}
-        <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-xs text-slate-300 mb-7 shadow-sm backdrop-blur-md">
-          <span className="flex h-2 w-2 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
-          </span>
-          <span className="font-semibold text-slate-200 text-xs">TRIO Platform v3.0</span>
-          <span className="text-slate-600 font-light">&bull;</span>
-          <span className="text-slate-400 text-[11px] font-mono tracking-wide">Continuous Operational Intelligence</span>
-        </div>
+        {/* Dual Ambient Spotlights */}
+        <div className="absolute top-12 left-1/2 -translate-x-1/2 w-[780px] h-[360px] bg-gradient-to-tr from-cyan-500/15 via-purple-500/10 to-transparent blur-[110px] pointer-events-none" />
 
-        {/* Hero Headline */}
-        <h1 className="text-3xl sm:text-5xl lg:text-[3.6rem] font-bold tracking-tight text-white max-w-4xl leading-[1.15] mb-5">
-          Discover What Your SCADA <br className="hidden sm:inline" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-200 to-slate-100">
-            Has Never Seen Before.
-          </span>
-        </h1>
-
-        {/* Hero Subtitle */}
-        <p className="text-sm sm:text-base text-slate-400 max-w-2xl leading-relaxed mb-8 font-normal">
-          An unsupervised tri-memory intelligence platform designed to eliminate false alarm fatigue, 
-          isolate baseline operating regimes, and characterize unknown physical states without labeled training data.
-        </p>
-
-        {/* Capability Metric Chips */}
-        <div className="flex flex-wrap items-center justify-center gap-5 text-xs text-slate-400 font-mono mb-9 py-2 px-4 rounded-xl bg-slate-900/40 border border-slate-800/60 max-w-xl">
-          <div className="flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Zero Training Leakage</span>
-          </div>
-          <span className="text-slate-700 hidden sm:inline">&bull;</span>
-          <div className="flex items-center gap-1.5">
-            <Activity className="w-3.5 h-3.5 text-cyan-400" />
-            <span>0% False Discovery Rate</span>
-          </div>
-          <span className="text-slate-700 hidden sm:inline">&bull;</span>
-          <div className="flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 text-purple-400" />
-            <span>DBSCAN Clustering</span>
-          </div>
-        </div>
-
-        {/* Hero CTAs */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mb-14">
-          <button
-            onClick={onEnterDemo}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-trio-cyan text-black font-semibold text-sm hover:bg-cyan-300 shadow-sm hover:shadow-glow-cyan transition-all"
+        <div className="max-w-7xl mx-auto flex flex-col items-center text-center relative z-10">
+          {/* Enterprise System Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45 }}
+            className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-slate-900/90 border border-slate-700/70 text-xs text-slate-300 mb-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md"
           >
-            <span>Launch Live Console</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+            </span>
+            <span className="font-semibold text-slate-100 text-xs">TRIO Platform v3.0</span>
+            <span className="text-slate-600 font-light">&bull;</span>
+            <span className="text-cyan-300/90 text-[11px] font-mono tracking-wide">Continuous Operational Intelligence</span>
+          </motion.div>
 
-          <a
-            href="#three-memories"
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-trio-card text-white font-medium text-sm border border-trio-border hover:border-slate-600 transition-all"
+          {/* Hero Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.08 }}
+            className="font-display text-4xl sm:text-5xl lg:text-[4rem] font-bold tracking-tight text-white max-w-4xl leading-[1.08] mb-6"
           >
-            <span>Tri-Memory Architecture</span>
-            <ChevronRight className="w-4 h-4 text-trio-muted" />
-          </a>
-        </div>
+            Discover What Your SCADA <br className="hidden sm:inline" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-200 to-purple-300">
+              Has Never Seen Before.
+            </span>
+          </motion.h1>
 
-        {/* Interactive SCADA & Discovery Console (High-Performance Industrial Visualizer) */}
-        <div className="w-full max-w-5xl">
-          <IndustrialHeroConsole />
+          {/* Hero Subtitle */}
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.16 }}
+            className="text-sm sm:text-base text-slate-400 max-w-2xl leading-relaxed mb-8 font-normal"
+          >
+            An unsupervised tri-memory intelligence platform designed to eliminate false alarm fatigue, 
+            isolate baseline operating regimes, and characterize unknown physical states without labeled training data.
+          </motion.p>
+
+          {/* Capability Metric Chips */}
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.22 }}
+            className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-slate-300 font-mono mb-9 py-2.5 px-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-md shadow-inner-specular"
+          >
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <span>Zero Training Leakage</span>
+            </div>
+            <span className="text-slate-700 hidden sm:inline">&bull;</span>
+            <div className="flex items-center gap-2">
+              <Activity className="w-4 h-4 text-cyan-400" />
+              <span>0% False Discovery Rate</span>
+            </div>
+            <span className="text-slate-700 hidden sm:inline">&bull;</span>
+            <div className="flex items-center gap-2">
+              <Layers className="w-4 h-4 text-purple-400" />
+              <span>DBSCAN Density Clustering</span>
+            </div>
+          </motion.div>
+
+          {/* Hero CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.28 }}
+            className="flex flex-wrap items-center justify-center gap-4 mb-14"
+          >
+            <button
+              onClick={onEnterDemo}
+              className="group flex items-center gap-2.5 px-7 py-3.5 rounded-xl bg-gradient-to-r from-cyan-400 to-sky-400 text-slate-950 font-semibold text-sm hover:from-cyan-300 hover:to-sky-300 shadow-[0_0_30px_-5px_rgba(34,211,238,0.5)] hover:shadow-[0_0_38px_-4px_rgba(34,211,238,0.7)] transition-all"
+            >
+              <span>Launch Live Console</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+
+            <a
+              href="#three-memories"
+              className="flex items-center gap-2 px-6 py-3.5 rounded-xl bg-slate-900/80 text-slate-100 font-medium text-sm border border-slate-700/80 hover:border-cyan-500/40 hover:bg-slate-800/80 shadow-inner-specular transition-all"
+            >
+              <span>Tri-Memory Architecture</span>
+              <ChevronRight className="w-4 h-4 text-trio-muted" />
+            </a>
+          </motion.div>
+
+          {/* Interactive SCADA & Discovery Console (High-Performance Industrial Visualizer) */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.34 }}
+            className="w-full max-w-5xl"
+          >
+            <IndustrialHeroConsole />
+          </motion.div>
         </div>
       </section>
 

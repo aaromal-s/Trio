@@ -77,12 +77,12 @@ export const TriMemoryPipelineMonitor: React.FC<TriMemoryPipelineMonitorProps> =
       </div>
 
       {/* Signal Routing Pipeline Indicator */}
-      <div className="p-2.5 rounded-lg bg-slate-950/40 border border-slate-800 flex items-center justify-between text-[11px] font-mono text-slate-400">
-        <span className="flex items-center gap-1.5 text-slate-300">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+      <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/90 flex items-center justify-between text-[11px] font-mono text-slate-400 shadow-inner">
+        <span className="flex items-center gap-2 text-slate-300">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
           Contradiction Scorer Active
         </span>
-        <span className="text-cyan-400">&tau; &ge; 0.48 Routing</span>
+        <span className="px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-300">&tau; &ge; 0.32 Routing</span>
       </div>
     </div>
   );

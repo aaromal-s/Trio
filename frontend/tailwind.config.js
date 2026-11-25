@@ -26,11 +26,15 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       boxShadow: {
-        'glow-cyan': '0 0 20px -5px rgba(34, 211, 238, 0.3)',
-        'glow-purple': '0 0 20px -5px rgba(139, 92, 246, 0.3)',
-        'glow-amber': '0 0 20px -5px rgba(245, 158, 11, 0.3)',
+        'glow-cyan': '0 0 24px -4px rgba(34, 211, 238, 0.35)',
+        'glow-purple': '0 0 24px -4px rgba(139, 92, 246, 0.35)',
+        'glow-amber': '0 0 24px -4px rgba(245, 158, 11, 0.35)',
+        'glow-emerald': '0 0 24px -4px rgba(52, 211, 153, 0.3)',
+        'inner-specular': 'inset 0 1px 0 0 rgba(255, 255, 255, 0.06)',
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
