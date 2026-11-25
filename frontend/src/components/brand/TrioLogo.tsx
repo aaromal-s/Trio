@@ -39,21 +39,21 @@ export const TrioLogo: React.FC<TrioLogoProps> = ({
         >
           <defs>
             <radialGradient id={`logo-glow-${size}`} cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stop-color="#22D3EE" stop-opacity="0.5" />
-              <stop offset="60%" stop-color="#8B5CF6" stop-opacity="0.2" />
-              <stop offset="100%" stop-color="#0B1120" stop-opacity="0" />
+              <stop offset="0%" stop-color="#F97316" stop-opacity="0.55" />
+              <stop offset="60%" stop-color="#FACC15" stop-opacity="0.2" />
+              <stop offset="100%" stop-color="#0C0A09" stop-opacity="0" />
             </radialGradient>
             <linearGradient id={`grad-stm-${size}`} x1="50" y1="50" x2="50" y2="20">
-              <stop offset="0%" stop-color="#F8FAFC" />
-              <stop offset="100%" stop-color="#22D3EE" />
+              <stop offset="0%" stop-color="#FAFAF9" />
+              <stop offset="100%" stop-color="#F97316" />
             </linearGradient>
             <linearGradient id={`grad-ltm-${size}`} x1="50" y1="50" x2="24" y2="72">
-              <stop offset="0%" stop-color="#F8FAFC" />
-              <stop offset="100%" stop-color="#8B5CF6" />
+              <stop offset="0%" stop-color="#FAFAF9" />
+              <stop offset="100%" stop-color="#FACC15" />
             </linearGradient>
             <linearGradient id={`grad-cm-${size}`} x1="50" y1="50" x2="76" y2="72">
-              <stop offset="0%" stop-color="#F8FAFC" />
-              <stop offset="100%" stop-color="#F59E0B" />
+              <stop offset="0%" stop-color="#FAFAF9" />
+              <stop offset="100%" stop-color="#FB923C" />
             </linearGradient>
           </defs>
 
@@ -65,7 +65,7 @@ export const TrioLogo: React.FC<TrioLogoProps> = ({
             cx="50"
             cy="50"
             r="36"
-            stroke="#1E293B"
+            stroke="#292524"
             strokeWidth="1.5"
             strokeDasharray="4 4"
             animate={animate ? { rotate: 360 } : {}}
@@ -77,7 +77,7 @@ export const TrioLogo: React.FC<TrioLogoProps> = ({
           <polygon
             points="50,20 24,72 76,72"
             fill="none"
-            stroke="#334155"
+            stroke="#44403C"
             strokeWidth="1.5"
             strokeLinejoin="round"
             opacity="0.7"
@@ -88,40 +88,40 @@ export const TrioLogo: React.FC<TrioLogoProps> = ({
           <line x1="50" y1="50" x2="24" y2="72" stroke={`url(#grad-ltm-${size})`} strokeWidth="2.5" strokeLinecap="round" />
           <line x1="50" y1="50" x2="76" y2="72" stroke={`url(#grad-cm-${size})`} strokeWidth="2.5" strokeLinecap="round" />
 
-          {/* Node 1: Short-Term Memory (Cyan) */}
+          {/* Node 1: Short-Term Memory (Molten Amber) */}
           <g>
-            <circle cx="50" cy="20" r="7.5" fill="#111C30" stroke="#22D3EE" strokeWidth="2" />
+            <circle cx="50" cy="20" r="7.5" fill="#1C1917" stroke="#F97316" strokeWidth="2" />
             <motion.circle
               cx="50"
               cy="20"
               r="3.5"
-              fill="#22D3EE"
+              fill="#F97316"
               animate={animate ? { scale: [1, 1.25, 1], opacity: [0.8, 1, 0.8] } : {}}
               transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}
             />
           </g>
 
-          {/* Node 2: Long-Term Memory (Purple) */}
+          {/* Node 2: Long-Term Memory (Warm Gold) */}
           <g>
-            <circle cx="24" cy="72" r="7.5" fill="#111C30" stroke="#8B5CF6" strokeWidth="2" />
+            <circle cx="24" cy="72" r="7.5" fill="#1C1917" stroke="#FACC15" strokeWidth="2" />
             <motion.circle
               cx="24"
               cy="72"
               r="3.5"
-              fill="#8B5CF6"
+              fill="#FACC15"
               animate={animate ? { scale: [1, 1.25, 1], opacity: [0.8, 1, 0.8] } : {}}
               transition={{ repeat: Infinity, duration: 2.7, delay: 0.4, ease: "easeInOut" }}
             />
           </g>
 
-          {/* Node 3: Contradiction Memory (Amber) */}
+          {/* Node 3: Contradiction Memory (Copper) */}
           <g>
-            <circle cx="76" cy="72" r="7.5" fill="#111C30" stroke="#F59E0B" strokeWidth="2" />
+            <circle cx="76" cy="72" r="7.5" fill="#1C1917" stroke="#FB923C" strokeWidth="2" />
             <motion.circle
               cx="76"
               cy="72"
               r="3.5"
-              fill="#F59E0B"
+              fill="#FB923C"
               animate={animate ? { scale: [1, 1.25, 1], opacity: [0.8, 1, 0.8] } : {}}
               transition={{ repeat: Infinity, duration: 2.5, delay: 0.8, ease: "easeInOut" }}
             />
@@ -132,22 +132,22 @@ export const TrioLogo: React.FC<TrioLogoProps> = ({
             cx="50"
             cy="50"
             r="6"
-            fill="#F8FAFC"
+            fill="#FAFAF9"
             animate={animate ? { scale: [0.95, 1.15, 0.95] } : {}}
             transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
-            filter="drop-shadow(0 0 8px #22D3EE)"
+            filter="drop-shadow(0 0 8px #F97316)"
           />
-          <circle cx="50" cy="50" r="2.5" fill="#0B1120" />
+          <circle cx="50" cy="50" r="2.5" fill="#0C0A09" />
         </svg>
       </div>
 
       {showText && (
         <div className="flex flex-col">
           <div className="flex items-center gap-1.5">
-            <span className="font-extrabold tracking-wider text-white text-xl sm:text-2xl font-sans">
+            <span className="font-display font-extrabold tracking-wider text-white text-xl sm:text-2xl">
               TRIO
             </span>
-            <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-cyan-950/80 text-trio-cyan border border-trio-cyan/30">
+            <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-orange-950/80 text-trio-cyan border border-trio-cyan/30">
               AI Core
             </span>
           </div>

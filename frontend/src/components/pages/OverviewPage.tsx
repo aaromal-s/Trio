@@ -30,8 +30,8 @@ interface OverviewPageProps {
   onNavigate: (view: string) => void;
 }
 
-const STATE_COLORS = ['#22D3EE', '#8B5CF6', '#34D399', '#F59E0B', '#F43F5E'];
-const SENSOR_PALETTE = ['#22D3EE', '#F59E0B', '#8B5CF6', '#34D399', '#EC4899', '#38BDF8'];
+const STATE_COLORS = ['#F97316', '#FACC15', '#34D399', '#FB923C', '#F43F5E'];
+const SENSOR_PALETTE = ['#F97316', '#FACC15', '#FB923C', '#34D399', '#F43F5E', '#FDBA74'];
 
 export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) => {
   const { 
@@ -54,10 +54,10 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) 
   return (
     <div className="space-y-6">
       {/* Top Banner / Command Status */}
-      <div className="relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-trio-card via-trio-card/90 to-slate-900/90 border border-slate-700/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] gap-3">
-        <div className="absolute -right-12 -top-12 w-40 h-40 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
+      <div className="relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-trio-card via-trio-card/90 to-stone-900/90 border border-stone-700/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] gap-3">
+        <div className="absolute -right-12 -top-12 w-40 h-40 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
         <div className="flex items-center gap-3.5 relative z-10">
-          <div className="p-2.5 rounded-xl bg-cyan-500/10 border border-trio-cyan/30 text-trio-cyan shadow-[0_0_15px_rgba(34,211,238,0.18)]">
+          <div className="p-2.5 rounded-xl bg-orange-500/10 border border-trio-cyan/30 text-trio-cyan shadow-[0_0_15px_rgba(249,115,22,0.18)]">
             <Activity className="w-5 h-5" />
           </div>
           <div>
@@ -75,14 +75,14 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) 
               )}
             </h2>
             <p className="text-xs text-trio-muted mt-0.5">
-              Active Dataset: <strong className="text-slate-200 font-mono">{dataset_name}</strong> &bull; Zero temporal data leakage enforced
+              Active Dataset: <strong className="text-stone-200 font-mono">{dataset_name}</strong> &bull; Zero temporal data leakage enforced
             </p>
           </div>
         </div>
 
         <button
           onClick={() => onNavigate('discoveries')}
-          className="relative z-10 flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-trio-cyan/15 hover:bg-trio-cyan/25 text-cyan-300 text-xs font-semibold border border-trio-cyan/35 shadow-sm transition-all shrink-0"
+          className="relative z-10 flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-trio-cyan/15 hover:bg-trio-cyan/25 text-orange-300 text-xs font-semibold border border-trio-cyan/35 shadow-sm transition-all shrink-0"
         >
           <span>View All Discoveries</span>
           <ArrowUpRight className="w-3.5 h-3.5" />
@@ -93,10 +93,10 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1 */}
         <div className="relative overflow-hidden p-4 rounded-2xl glass-card group">
-          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-cyan-400/80 via-cyan-400/20 to-transparent" />
+          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-orange-500/80 via-orange-400/20 to-transparent" />
           <div className="flex items-center justify-between text-xs text-trio-muted mb-2.5">
             <span className="font-medium">Observations Processed</span>
-            <div className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-trio-cyan">
+            <div className="p-1.5 rounded-lg bg-orange-500/10 border border-orange-500/20 text-trio-cyan">
               <Activity className="w-3.5 h-3.5" />
             </div>
           </div>
@@ -111,10 +111,10 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) 
 
         {/* KPI 2 */}
         <div className="relative overflow-hidden p-4 rounded-2xl glass-card group">
-          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-purple-400/80 via-purple-400/20 to-transparent" />
+          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-yellow-400/80 via-yellow-400/20 to-transparent" />
           <div className="flex items-center justify-between text-xs text-trio-muted mb-2.5">
             <span className="font-medium">Known Operational States</span>
-            <div className="p-1.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-trio-purple">
+            <div className="p-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-trio-purple">
               <Layers className="w-3.5 h-3.5" />
             </div>
           </div>
@@ -122,7 +122,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) 
             {kpis.known_operational_states}
           </div>
           <div className="text-[11px] text-trio-muted mt-2 flex items-center gap-1.5">
-            <span className="text-purple-300 font-medium">LTM Prototypes</span>
+            <span className="text-yellow-300 font-medium">LTM Prototypes</span>
             <span>learned from baseline</span>
           </div>
         </div>

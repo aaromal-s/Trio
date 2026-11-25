@@ -79,30 +79,30 @@ export const IndustrialHeroConsole: React.FC = () => {
     return { linePoints: line, areaPoints: area, scanY: currentScanY };
   }, [mode, tick]);
 
-  const waveColor = mode === 'cavitation' ? '#f43f5e' : mode === 'transient' ? '#f59e0b' : '#22d3ee';
+  const waveColor = mode === 'cavitation' ? '#f43f5e' : mode === 'transient' ? '#facc15' : '#f97316';
 
   return (
-    <div className="w-full rounded-2xl bg-[#0B1221]/95 border border-slate-700/60 shadow-[0_24px_80px_-16px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.08)] overflow-hidden backdrop-blur-2xl">
+    <div className="w-full rounded-2xl bg-[#141210]/95 border border-stone-700/60 shadow-[0_24px_80px_-16px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.08)] overflow-hidden backdrop-blur-2xl">
       {/* Console Top Control Bar */}
-      <div className="px-5 py-3.5 bg-slate-950/90 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
+      <div className="px-5 py-3.5 bg-[#0C0A09]/90 border-b border-stone-800/80 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-60" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)]" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-60" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.8)]" />
             </span>
-            <span className="font-mono text-xs font-semibold tracking-wider text-slate-100">SCADA STREAM INGESTION</span>
+            <span className="font-mono text-xs font-semibold tracking-wider text-stone-100">SCADA STREAM INGESTION</span>
           </div>
-          <span className="text-slate-700 font-mono text-xs hidden sm:inline">&bull;</span>
-          <span className="text-[11px] font-mono text-slate-400 hidden sm:inline">MetroPT-3 Air Compressor &bull; 7 Channels</span>
+          <span className="text-stone-700 font-mono text-xs hidden sm:inline">&bull;</span>
+          <span className="text-[11px] font-mono text-stone-400 hidden sm:inline">MetroPT-3 Air Compressor &bull; 7 Channels</span>
         </div>
 
         {/* Interactive Scenario Selector with Animated Pill */}
-        <div className="flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800/90 text-xs">
+        <div className="flex items-center gap-1 bg-stone-900/90 p-1 rounded-xl border border-stone-800/90 text-xs">
           {[
-            { id: 'normal', label: 'Normal Baseline', activeClass: 'text-cyan-300', bgClass: 'bg-cyan-500/15 border-cyan-500/40' },
+            { id: 'normal', label: 'Normal Baseline', activeClass: 'text-orange-300', bgClass: 'bg-orange-500/15 border-orange-500/40' },
             { id: 'cavitation', label: 'Novel Regime (Overheat)', activeClass: 'text-rose-300', bgClass: 'bg-rose-500/15 border-rose-500/40' },
-            { id: 'transient', label: 'Transient Pulse (Noise)', activeClass: 'text-amber-300', bgClass: 'bg-amber-500/15 border-amber-500/40' },
+            { id: 'transient', label: 'Transient Pulse (Noise)', activeClass: 'text-yellow-300', bgClass: 'bg-yellow-500/15 border-yellow-500/40' },
           ].map((tab) => {
             const isActive = mode === tab.id;
             return (
@@ -213,16 +213,16 @@ export const IndustrialHeroConsole: React.FC = () => {
             </div>
 
             {/* Live Interactive Oscilloscope Waveform */}
-            <div className="relative h-48 rounded-xl bg-[#060B14] border border-slate-800/90 p-3.5 overflow-hidden shadow-inner">
-              <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b22_1px,transparent_1px),linear-gradient(to_bottom,#1e293b22_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+            <div className="relative h-48 rounded-xl bg-[#0A0807] border border-stone-800/90 p-3.5 overflow-hidden shadow-inner">
+              <div className="absolute inset-0 bg-[linear-gradient(to_right,#29252430_1px,transparent_1px),linear-gradient(to_bottom,#29252430_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
               
-              <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-2 relative z-10">
+              <div className="flex items-center justify-between text-[10px] font-mono text-stone-400 mb-2 relative z-10">
                 <span className="flex items-center gap-2">
-                  <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-200">CH: {activeSensor}</span>
+                  <span className="px-1.5 py-0.5 rounded bg-stone-900 border border-stone-800 text-stone-200">CH: {activeSensor}</span>
                   <span>SLIDING WINDOW N=30</span>
                 </span>
-                <span className="text-cyan-400 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                <span className="text-orange-400 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
                   LIVE TELEMETRY
                 </span>
               </div>

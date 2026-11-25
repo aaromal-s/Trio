@@ -31,23 +31,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   return (
     <div className="min-h-screen bg-trio-bg text-trio-text flex flex-col selection:bg-trio-cyan selection:text-black">
       {/* Top Enterprise Header */}
-      <header className="sticky top-0 z-50 w-full h-18 bg-trio-bg/80 backdrop-blur-2xl border-b border-slate-800/70 px-6 sm:px-12 flex items-center justify-between shadow-[0_4px_30px_rgba(0,0,0,0.4)]">
+      <header className="sticky top-0 z-50 w-full h-18 bg-trio-bg/85 backdrop-blur-2xl border-b border-stone-800/80 px-6 sm:px-12 flex items-center justify-between shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
         <TrioLogo size="md" subtitle="Learn. Remember. Discover." />
         
         <nav className="hidden md:flex items-center gap-8 text-xs font-semibold uppercase tracking-wider text-trio-muted">
-          <a href="#how-it-works" className="hover:text-trio-cyan transition-colors">Methodology</a>
-          <a href="#three-memories" className="hover:text-trio-cyan transition-colors">Tri-Memory</a>
-          <a href="#research" className="hover:text-trio-cyan transition-colors">Formulation</a>
-          <a href="#applications" className="hover:text-trio-cyan transition-colors">Industrial Scope</a>
+          <a href="#how-it-works" className="hover:text-orange-400 transition-colors">Methodology</a>
+          <a href="#three-memories" className="hover:text-orange-400 transition-colors">Tri-Memory</a>
+          <a href="#research" className="hover:text-orange-400 transition-colors">Formulation</a>
+          <a href="#applications" className="hover:text-orange-400 transition-colors">Industrial Scope</a>
         </nav>
 
         <div className="flex items-center gap-3">
           <button
             onClick={onOpenViva}
-            className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-900/70 hover:bg-slate-800/90 border border-slate-700/70 rounded-xl transition-all shadow-inner-specular"
+            className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-stone-300 hover:text-white bg-stone-900/80 hover:bg-stone-800 border border-stone-700/70 rounded-xl transition-all shadow-inner-specular"
             title="System Architecture & Mathematical Specifications"
           >
-            <FileText className="w-3.5 h-3.5 text-cyan-400" />
+            <FileText className="w-3.5 h-3.5 text-orange-400" />
             <span>Architecture Specs</span>
           </button>
 
@@ -60,7 +60,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           <button
             onClick={onEnterDemo}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-950 bg-gradient-to-r from-cyan-400 to-sky-300 hover:from-cyan-300 hover:to-sky-200 rounded-xl shadow-[0_0_20px_-4px_rgba(34,211,238,0.5)] transition-all"
+            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-stone-950 bg-gradient-to-r from-orange-500 to-amber-400 hover:from-orange-400 hover:to-amber-300 rounded-xl shadow-[0_0_20px_-4px_rgba(249,115,22,0.55)] transition-all"
           >
             <span>Launch Platform</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -77,7 +77,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         />
 
         {/* Dual Ambient Spotlights */}
-        <div className="absolute top-12 left-1/2 -translate-x-1/2 w-[780px] h-[360px] bg-gradient-to-tr from-cyan-500/15 via-purple-500/10 to-transparent blur-[110px] pointer-events-none" />
+        <div className="absolute top-12 left-1/2 -translate-x-1/2 w-[780px] h-[360px] bg-gradient-to-tr from-orange-500/15 via-amber-400/10 to-transparent blur-[110px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto flex flex-col items-center text-center relative z-10">
           {/* Enterprise System Badge */}
@@ -85,15 +85,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45 }}
-            className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-slate-900/90 border border-slate-700/70 text-xs text-slate-300 mb-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md"
+            className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-stone-900/90 border border-stone-700/70 text-xs text-stone-300 mb-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md"
           >
             <span className="flex h-2 w-2 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
             </span>
-            <span className="font-semibold text-slate-100 text-xs">TRIO Platform v3.0</span>
-            <span className="text-slate-600 font-light">&bull;</span>
-            <span className="text-cyan-300/90 text-[11px] font-mono tracking-wide">Continuous Operational Intelligence</span>
+            <span className="font-semibold text-stone-100 text-xs">TRIO Platform v3.0</span>
+            <span className="text-stone-600 font-light">&bull;</span>
+            <span className="text-amber-300/90 text-[11px] font-mono tracking-wide">Continuous Operational Intelligence</span>
           </motion.div>
 
           {/* Hero Headline */}
@@ -104,7 +104,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             className="font-display text-4xl sm:text-5xl lg:text-[4rem] font-bold tracking-tight text-white max-w-4xl leading-[1.08] mb-6"
           >
             Discover What Your SCADA <br className="hidden sm:inline" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-200 to-purple-300">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-200">
               Has Never Seen Before.
             </span>
           </motion.h1>
@@ -114,7 +114,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.16 }}
-            className="text-sm sm:text-base text-slate-400 max-w-2xl leading-relaxed mb-8 font-normal"
+            className="text-sm sm:text-base text-stone-400 max-w-2xl leading-relaxed mb-8 font-normal"
           >
             An unsupervised tri-memory intelligence platform designed to eliminate false alarm fatigue, 
             isolate baseline operating regimes, and characterize unknown physical states without labeled training data.
@@ -125,20 +125,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.22 }}
-            className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-slate-300 font-mono mb-9 py-2.5 px-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-md shadow-inner-specular"
+            className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-stone-300 font-mono mb-9 py-2.5 px-5 rounded-2xl bg-stone-900/70 border border-stone-800 backdrop-blur-md shadow-inner-specular"
           >
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
               <span>Zero Training Leakage</span>
             </div>
-            <span className="text-slate-700 hidden sm:inline">&bull;</span>
+            <span className="text-stone-700 hidden sm:inline">&bull;</span>
             <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-cyan-400" />
+              <Activity className="w-4 h-4 text-orange-400" />
               <span>0% False Discovery Rate</span>
             </div>
-            <span className="text-slate-700 hidden sm:inline">&bull;</span>
+            <span className="text-stone-700 hidden sm:inline">&bull;</span>
             <div className="flex items-center gap-2">
-              <Layers className="w-4 h-4 text-purple-400" />
+              <Layers className="w-4 h-4 text-yellow-400" />
               <span>DBSCAN Density Clustering</span>
             </div>
           </motion.div>
@@ -152,7 +152,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           >
             <button
               onClick={onEnterDemo}
-              className="group flex items-center gap-2.5 px-7 py-3.5 rounded-xl bg-gradient-to-r from-cyan-400 to-sky-400 text-slate-950 font-semibold text-sm hover:from-cyan-300 hover:to-sky-300 shadow-[0_0_30px_-5px_rgba(34,211,238,0.5)] hover:shadow-[0_0_38px_-4px_rgba(34,211,238,0.7)] transition-all"
+              className="group flex items-center gap-2.5 px-7 py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-400 text-stone-950 font-semibold text-sm hover:from-orange-400 hover:to-amber-300 shadow-[0_0_30px_-5px_rgba(249,115,22,0.55)] hover:shadow-[0_0_38px_-4px_rgba(249,115,22,0.75)] transition-all"
             >
               <span>Launch Live Console</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
@@ -160,7 +160,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
             <a
               href="#three-memories"
-              className="flex items-center gap-2 px-6 py-3.5 rounded-xl bg-slate-900/80 text-slate-100 font-medium text-sm border border-slate-700/80 hover:border-cyan-500/40 hover:bg-slate-800/80 shadow-inner-specular transition-all"
+              className="flex items-center gap-2 px-6 py-3.5 rounded-xl bg-stone-900/80 text-stone-100 font-medium text-sm border border-stone-700/80 hover:border-orange-500/40 hover:bg-stone-800/80 shadow-inner-specular transition-all"
             >
               <span>Tri-Memory Architecture</span>
               <ChevronRight className="w-4 h-4 text-trio-muted" />

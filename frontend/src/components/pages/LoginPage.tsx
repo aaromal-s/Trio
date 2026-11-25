@@ -201,13 +201,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-trio-bg text-slate-100 flex flex-col justify-between relative overflow-hidden font-sans select-none">
+    <div className="min-h-screen bg-trio-bg text-stone-100 flex flex-col justify-between relative overflow-hidden font-sans select-none">
       {/* Architectural Grid & Ambient Spotlight */}
       <div
         className="absolute inset-0 bg-scada-grid pointer-events-none opacity-70"
         style={{ maskImage: 'radial-gradient(ellipse 70% 60% at 50% 45%, black 25%, transparent 100%)' }}
       />
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[620px] h-[360px] bg-gradient-to-tr from-cyan-500/12 via-purple-500/10 to-transparent blur-[110px] pointer-events-none" />
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[620px] h-[360px] bg-gradient-to-tr from-orange-500/15 via-amber-400/10 to-transparent blur-[110px] pointer-events-none" />
 
       {/* Top Header */}
       <header className="relative z-20 px-6 py-4 flex items-center justify-between border-b border-trio-border/60 bg-trio-bg/80 backdrop-blur-xl">
@@ -217,7 +217,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
         <button
           onClick={onBackToLanding}
-          className="text-xs text-slate-300 hover:text-white flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-700/80 hover:border-cyan-500/40 bg-slate-900/70 shadow-inner-specular transition-all"
+          className="text-xs text-stone-300 hover:text-white flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-stone-700/80 hover:border-orange-500/40 bg-stone-900/70 shadow-inner-specular transition-all"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Platform Overview</span>
@@ -226,8 +226,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
       {/* Center Auth Card */}
       <main className="relative z-20 flex-1 flex items-center justify-center p-4 sm:p-6">
-        <div className="w-full max-w-md bg-[#0E1628]/90 border border-slate-700/60 rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_25px_70px_-15px_rgba(0,0,0,0.85)] backdrop-blur-2xl p-6 sm:p-8 relative overflow-hidden">
-          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-cyan-400/80 via-purple-400/70 to-transparent" />
+        <div className="w-full max-w-md bg-[#161311]/90 border border-stone-700/60 rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_25px_70px_-15px_rgba(0,0,0,0.85)] backdrop-blur-2xl p-6 sm:p-8 relative overflow-hidden">
+          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-orange-500/85 via-amber-400/75 to-transparent" />
           {/* Logo & Headline */}
           <div className="flex flex-col items-center text-center mb-6">
             <TrioLogo size="md" showText={false} className="mb-3" />
