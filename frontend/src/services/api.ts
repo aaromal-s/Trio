@@ -331,8 +331,17 @@ export const api = {
     }
 
     let res: Response;
+    // Bypass Vercel's 4.5 MB / 10s serverless proxy limit for multipart CSV uploads in production
+    const isVercelProd =
+      typeof window !== 'undefined' &&
+      window.location.hostname.endsWith('vercel.app') &&
+      API_BASE_URL === '/api';
+    const uploadEndpoint = isVercelProd
+      ? 'https://trio-59r2.onrender.com/api/datasets/upload-csv'
+      : `${API_BASE_URL}/datasets/upload-csv`;
+
     try {
-      res = await fetch(`${API_BASE_URL}/datasets/upload-csv`, {
+      res = await fetch(uploadEndpoint, {
         method: 'POST',
         headers,
         body: formData
@@ -340,7 +349,7 @@ export const api = {
     } catch (netErr: any) {
       const isFetchErr = netErr?.name === 'TypeError' || String(netErr?.message || '').toLowerCase().includes('fetch');
       if (isFetchErr) {
-        throw new Error(`Unable to connect to TRIO backend at ${API_BASE_URL}. Ensure the backend server is running and accessible.`);
+        throw new Error(`Unable to connect to TRIO backend (${uploadEndpoint}). If the server is waking up from sleep, please wait 15 seconds and retry, or ensure your CSV is under 25 MB.`);
       }
       throw netErr;
     }

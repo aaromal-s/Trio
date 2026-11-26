@@ -113,6 +113,12 @@ async def upload_csv(
         content = await file.read()
         if not content or len(content.strip()) == 0:
             raise HTTPException(status_code=400, detail="The uploaded CSV file is empty (0 bytes).")
+        max_bytes = 25 * 1024 * 1024
+        if len(content) > max_bytes:
+            raise HTTPException(
+                status_code=413,
+                detail=f"CSV file is {(len(content) / (1024 * 1024)):.1f} MB, which exceeds the 25 MB cloud ingestion limit. Please downsample or use the preprocessed MetroPT-3 dataset."
+            )
             
         # 1. Decode text content supporting UTF-8 BOM, UTF-8, Latin-1, CP1252
         decoded_text: Optional[str] = None
@@ -170,6 +176,12 @@ async def upload_csv(
 
         # Strip whitespace from column headers
         df.columns = [str(c).strip() for c in df.columns]
+
+        # Chronological downsampling safeguard for large CSVs (>10,000 rows) to prevent OOM/timeouts
+        if len(df) > 10000:
+            step = max(1, len(df) // 5000)
+            df = df.iloc[::step].reset_index(drop=True)
+            logger.info("Downsampled large uploaded CSV '%s' to %d chronological rows (step=%d)", file.filename, len(df), step)
 
         # 3. Transposed / Sensor-oriented detection and unambiguous auto-inversion
         transposed_applied = False
