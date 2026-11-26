@@ -12,6 +12,7 @@ import {
   Settings, 
   BookOpen, 
   LogOut,
+  Search,
   Menu,
   X
 } from 'lucide-react';
@@ -30,6 +31,7 @@ interface NavbarProps {
   onOpenSettings: () => void;
   onOpenProfile: () => void;
   onOpenViva: () => void;
+  onOpenCommandPalette?: () => void;
   onLogout: () => void;
   userEmail: string;
   onToggleMobileMenu?: () => void;
@@ -52,6 +54,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSettings,
   onOpenProfile,
   onOpenViva,
+  onOpenCommandPalette,
   onLogout,
   userEmail,
   onToggleMobileMenu,
@@ -128,8 +131,22 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Right Controls: Digital Clock, Refresh, Theme Toggle, Viva Guide, User Menu */}
+      {/* Right Controls: Command Palette, Digital Clock, Refresh, Notifications, User Menu */}
       <div className="flex items-center gap-2.5 sm:gap-3">
+        {onOpenCommandPalette && (
+          <button
+            onClick={onOpenCommandPalette}
+            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl liquid-glass-pill text-xs text-stone-300 hover:text-white transition-all"
+            title="Open Command Palette (Ctrl+K)"
+          >
+            <Search className="w-3.5 h-3.5 text-orange-400" />
+            <span className="text-[11px] font-medium">Search</span>
+            <kbd className="px-1.5 py-0.5 text-[10px] font-mono rounded bg-stone-900/90 border border-stone-700 text-stone-400">
+              Ctrl+K
+            </kbd>
+          </button>
+        )}
+
         {/* Digital Clock */}
         <div className="hidden sm:flex flex-col items-end pr-3 border-r border-trio-border">
           <div className="flex items-center gap-1.5 font-mono tabular-nums text-xs font-semibold text-trio-text">

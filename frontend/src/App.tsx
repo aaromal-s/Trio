@@ -12,6 +12,8 @@ import { EvaluationPage } from './components/pages/EvaluationPage';
 import { SettingsModal } from './components/modals/SettingsModal';
 import { ProfileModal } from './components/modals/ProfileModal';
 import { VivaGuideModal } from './components/modals/VivaGuideModal';
+import { CommandPaletteModal } from './components/modals/CommandPaletteModal';
+import { downloadIncidentReport } from './utils/exportIncidentReport';
 import { TelemetryProvider, useTelemetry } from './context/TelemetryContext';
 
 import { 
@@ -79,6 +81,28 @@ function AppContent() {
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
   const [isVivaOpen, setIsVivaOpen] = useState<boolean>(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
+
+  // Global Ctrl+K / Cmd+K Command Palette Shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handleExportReport = useCallback(() => {
+    downloadIncidentReport({
+      overview: overviewData,
+      dataset: datasetInfo,
+      model: modelStatus,
+      discoveries,
+    });
+  }, [overviewData, datasetInfo, modelStatus, discoveries]);
 
   // Primary Data Fetching
   const fetchAllData = useCallback(async () => {
@@ -182,6 +206,7 @@ function AppContent() {
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenProfile={() => setIsProfileOpen(true)}
         onOpenViva={() => setIsVivaOpen(true)}
+        onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         onLogout={() => setCurrentView('login')}
         userEmail={userProfile?.email || userEmail}
         onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -205,6 +230,7 @@ function AppContent() {
             <OverviewPage
               data={overviewData}
               onNavigate={setCurrentView}
+              onExportReport={handleExportReport}
             />
           )}
 
@@ -277,6 +303,16 @@ function AppContent() {
       <VivaGuideModal
         isOpen={isVivaOpen}
         onClose={() => setIsVivaOpen(false)}
+      />
+
+      <CommandPaletteModal
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onNavigate={setCurrentView}
+        onExportReport={handleExportReport}
+        onRefreshData={triggerManualRefresh}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenViva={() => setIsVivaOpen(true)}
       />
     </div>
   );

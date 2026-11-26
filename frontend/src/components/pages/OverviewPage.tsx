@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   ResponsiveContainer, 
   AreaChart, 
@@ -11,7 +11,8 @@ import {
   XAxis, 
   YAxis, 
   Tooltip, 
-  CartesianGrid
+  CartesianGrid,
+  ReferenceLine
 } from 'recharts';
 import { 
   Activity, 
@@ -20,7 +21,12 @@ import {
   CheckCircle2, 
   ArrowUpRight, 
   ShieldAlert,
-  Server
+  Server,
+  Play,
+  Pause,
+  RotateCcw,
+  FileDown,
+  Sliders
 } from 'lucide-react';
 import { OverviewData } from '../../services/api';
 import { TriMemoryPipelineMonitor } from '../common/TriMemoryPipelineMonitor';
@@ -28,12 +34,13 @@ import { TriMemoryPipelineMonitor } from '../common/TriMemoryPipelineMonitor';
 interface OverviewPageProps {
   data: OverviewData;
   onNavigate: (view: string) => void;
+  onExportReport?: () => void;
 }
 
 const STATE_COLORS = ['#F97316', '#FACC15', '#34D399', '#FB923C', '#F43F5E'];
 const SENSOR_PALETTE = ['#F97316', '#FACC15', '#FB923C', '#34D399', '#F43F5E', '#FDBA74'];
 
-export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) => {
+export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate, onExportReport }) => {
   const { 
     kpis, 
     state_distribution, 
@@ -46,7 +53,53 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) 
     is_simulated
   } = data;
 
-  const sensorKeys = React.useMemo(() => {
+  const maxSteps = Math.max(sensor_trends?.length || 0, contradiction_trend?.length || 0);
+  const [replayActive, setReplayActive] = useState(false);
+  const [replayPlaying, setReplayPlaying] = useState(false);
+  const [replayIndex, setReplayIndex] = useState<number>(maxSteps);
+  const [replaySpeed, setReplaySpeed] = useState<1 | 2 | 4>(1);
+  const [simThreshold, setSimThreshold] = useState<number>(0.32);
+
+  useEffect(() => {
+    if (!replayActive) {
+      setReplayIndex(maxSteps);
+    }
+  }, [maxSteps, replayActive]);
+
+  useEffect(() => {
+    if (!replayActive || !replayPlaying || maxSteps <= 1) return;
+    const ms = Math.round(450 / replaySpeed);
+    const timer = setInterval(() => {
+      setReplayIndex((prev) => {
+        if (prev >= maxSteps) {
+          setReplayPlaying(false);
+          return maxSteps;
+        }
+        return prev + 1;
+      });
+    }, ms);
+    return () => clearInterval(timer);
+  }, [replayActive, replayPlaying, replaySpeed, maxSteps]);
+
+  const visibleSensorTrends = useMemo(() => {
+    if (!replayActive) return sensor_trends;
+    return sensor_trends.slice(0, Math.max(2, replayIndex));
+  }, [sensor_trends, replayActive, replayIndex]);
+
+  const visibleContradictionTrend = useMemo(() => {
+    if (!replayActive) return contradiction_trend;
+    return contradiction_trend.slice(0, Math.max(2, replayIndex));
+  }, [contradiction_trend, replayActive, replayIndex]);
+
+  const thresholdStats = useMemo(() => {
+    const pts = visibleContradictionTrend || [];
+    const flagged = pts.filter((p) => p.contradiction_score >= simThreshold).length;
+    const suppressed = pts.length - flagged;
+    const latest = pts[pts.length - 1];
+    return { flagged, suppressed, latest };
+  }, [visibleContradictionTrend, simThreshold]);
+
+  const sensorKeys = useMemo(() => {
     if (!sensor_trends || sensor_trends.length === 0) return [];
     return Object.keys(sensor_trends[0]).filter(k => k !== 'timestamp');
   }, [sensor_trends]);
@@ -80,13 +133,25 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) 
           </div>
         </div>
 
-        <button
-          onClick={() => onNavigate('discoveries')}
-          className="relative z-10 flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-trio-cyan/15 hover:bg-trio-cyan/25 text-orange-300 text-xs font-semibold border border-trio-cyan/35 shadow-sm transition-all shrink-0"
-        >
-          <span>View All Discoveries</span>
-          <ArrowUpRight className="w-3.5 h-3.5" />
-        </button>
+        <div className="relative z-10 flex items-center gap-2 shrink-0">
+          {onExportReport && (
+            <button
+              onClick={onExportReport}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl liquid-glass-btn text-stone-200 hover:text-white text-xs font-semibold shrink-0"
+              title="Download Shift Handover & Incident Report (.md)"
+            >
+              <FileDown className="w-3.5 h-3.5 text-orange-400" />
+              <span className="hidden sm:inline">Export Report</span>
+            </button>
+          )}
+          <button
+            onClick={() => onNavigate('discoveries')}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-trio-cyan/15 hover:bg-trio-cyan/25 text-orange-300 text-xs font-semibold border border-trio-cyan/35 shadow-sm transition-all shrink-0"
+          >
+            <span>View All Discoveries</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
       {/* 4 Primary KPI Cards */}
@@ -164,6 +229,106 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) 
         </div>
       </div>
 
+      {/* Interactive Anomaly Replay & Threshold Sensitivity Control Bar */}
+      {maxSteps > 2 && (
+        <div className="p-4 rounded-2xl glass-card flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          {/* Time-Travel Replay Controls */}
+          <div className="flex flex-wrap items-center gap-3 flex-1">
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => {
+                  if (!replayActive) {
+                    setReplayActive(true);
+                    setReplayIndex(Math.min(5, maxSteps));
+                    setReplayPlaying(true);
+                  } else {
+                    setReplayPlaying((p) => !p);
+                  }
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl liquid-glass-primary text-stone-950 text-xs font-semibold"
+              >
+                {replayPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                <span>{replayPlaying ? 'Pause Replay' : replayActive ? 'Resume' : 'Replay Anomaly'}</span>
+              </button>
+
+              {replayActive && (
+                <button
+                  onClick={() => {
+                    setReplayPlaying(false);
+                    setReplayActive(false);
+                    setReplayIndex(maxSteps);
+                  }}
+                  className="p-1.5 rounded-xl liquid-glass-btn text-stone-300 hover:text-white"
+                  title="Reset to Live Full Window"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-1 bg-stone-950/70 p-0.5 rounded-lg border border-stone-800 text-[11px] font-mono">
+              {([1, 2, 4] as const).map((spd) => (
+                <button
+                  key={spd}
+                  onClick={() => setReplaySpeed(spd)}
+                  className={`px-2 py-0.5 rounded-md transition-colors ${
+                    replaySpeed === spd ? 'bg-orange-500/20 text-orange-300 font-bold' : 'text-stone-400 hover:text-white'
+                  }`}
+                >
+                  {spd}x
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2.5 flex-1 min-w-[160px]">
+              <input
+                type="range"
+                min={2}
+                max={maxSteps}
+                value={replayIndex}
+                onChange={(e) => {
+                  setReplayActive(true);
+                  setReplayPlaying(false);
+                  setReplayIndex(Number(e.target.value));
+                }}
+                className="w-full accent-orange-500 cursor-pointer h-1.5 bg-stone-800 rounded-lg"
+                aria-label="Replay Timeline Scrubber"
+              />
+              <span className="text-[11px] font-mono tabular-nums text-stone-300 shrink-0">
+                {replayIndex}/{maxSteps}
+              </span>
+            </div>
+          </div>
+
+          {/* What-If Threshold (τ) Sensitivity Slider */}
+          <div className="flex flex-wrap items-center gap-3 pt-3 lg:pt-0 border-t lg:border-t-0 lg:border-l border-stone-800 lg:pl-4">
+            <div className="flex items-center gap-1.5 text-xs text-stone-300 font-medium">
+              <Sliders className="w-3.5 h-3.5 text-orange-400" />
+              <span>Sensitivity &tau;:</span>
+              <span className="font-mono font-bold text-orange-300 tabular-nums">{simThreshold.toFixed(2)}</span>
+            </div>
+            <input
+              type="range"
+              min={0.15}
+              max={0.75}
+              step={0.01}
+              value={simThreshold}
+              onChange={(e) => setSimThreshold(Number(e.target.value))}
+              className="w-28 accent-amber-400 cursor-pointer h-1.5 bg-stone-800 rounded-lg"
+              aria-label="Contradiction Threshold Slider"
+            />
+            <div className="flex items-center gap-2 text-[10px] font-mono">
+              <span className="px-2 py-0.5 rounded bg-rose-500/15 text-rose-300 border border-rose-500/30 tabular-nums">
+                CM Flagged: {thresholdStats.flagged}
+              </span>
+              <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/25 tabular-nums">
+                Suppressed: {thresholdStats.suppressed}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Charts Row: Multi-Sensor Activity Timeline + State Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Multi-Sensor Activity Timeline (2 Cols) */}
@@ -191,7 +356,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) 
 
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={sensor_trends}>
+              <AreaChart data={visibleSensorTrends}>
                 <defs>
                   {sensorKeys.slice(0, 4).map((key, idx) => {
                     const color = SENSOR_PALETTE[idx % SENSOR_PALETTE.length];
@@ -296,28 +461,34 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) 
                 </span>
               </h3>
               <p className="text-[11px] text-trio-muted">
-                Points above threshold &tau; (0.48) trigger Contradiction Memory ingestion.
+                Points above threshold &tau; ({simThreshold.toFixed(2)}) trigger Contradiction Memory ingestion.
               </p>
             </div>
-            <div className="text-xs font-mono text-trio-amber flex items-center gap-1.5 bg-amber-950/40 px-2.5 py-1 rounded border border-trio-amber/30">
+            <div className="text-xs font-mono text-trio-amber flex items-center gap-1.5 bg-amber-950/40 px-2.5 py-1 rounded border border-trio-amber/30 tabular-nums">
               <ShieldAlert className="w-3.5 h-3.5" />
-              <span>Threshold &tau; = 0.48</span>
+              <span>Threshold &tau; = {simThreshold.toFixed(2)}</span>
             </div>
           </div>
 
           <div className="h-56 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={contradiction_trend}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
-                <XAxis dataKey="timestamp" stroke="#64748B" tick={{ fontSize: 10 }} />
-                <YAxis stroke="#64748B" tick={{ fontSize: 10 }} domain={[0, 1]} />
+              <LineChart data={visibleContradictionTrend}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#292524" />
+                <XAxis dataKey="timestamp" stroke="#78716C" tick={{ fontSize: 10 }} />
+                <YAxis stroke="#78716C" tick={{ fontSize: 10 }} domain={[0, 1]} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#111C30', borderColor: '#1E293B', borderRadius: '8px', fontSize: '11px' }}
+                  contentStyle={{ backgroundColor: '#1C1917', borderColor: '#292524', borderRadius: '8px', fontSize: '11px' }}
+                />
+                <ReferenceLine
+                  y={simThreshold}
+                  stroke="#F43F5E"
+                  strokeDasharray="4 4"
+                  strokeWidth={1.5}
                 />
                 <Line 
                   type="monotone" 
                   dataKey="contradiction_score" 
-                  stroke="#22D3EE" 
+                  stroke="#F97316" 
                   strokeWidth={2} 
                   dot={false}
                   name="Combined Score (C)" 
@@ -325,7 +496,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) 
                 <Line 
                   type="monotone" 
                   dataKey="distance_score" 
-                  stroke="#8B5CF6" 
+                  stroke="#FACC15" 
                   strokeWidth={1} 
                   strokeDasharray="3 3"
                   dot={false}
@@ -334,7 +505,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ data, onNavigate }) 
                 <Line 
                   type="monotone" 
                   dataKey="anomaly_score" 
-                  stroke="#F59E0B" 
+                  stroke="#FB923C" 
                   strokeWidth={1} 
                   strokeDasharray="3 3"
                   dot={false}

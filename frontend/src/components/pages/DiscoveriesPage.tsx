@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Compass, 
   CheckCircle2, 
   Clock, 
   XCircle, 
   Sparkles,
-  BarChart2
+  BarChart2,
+  Target
 } from 'lucide-react';
 import { api, DiscoveryCandidateItem } from '../../services/api';
 
@@ -28,6 +29,19 @@ export const DiscoveriesPage: React.FC<DiscoveriesPageProps> = ({
       setSelectedCandidate(candidates[0]);
     }
   }, [candidates]);
+
+  const rankedAttribution = useMemo(() => {
+    if (!selectedCandidate?.feature_deltas) return [];
+    const entries = Object.entries(selectedCandidate.feature_deltas);
+    const totalAbs = entries.reduce((sum, [, val]) => sum + Math.abs(val), 0) || 1;
+    return entries
+      .map(([sensor, delta]) => ({
+        sensor,
+        delta,
+        pct: Math.round((Math.abs(delta) / totalAbs) * 100),
+      }))
+      .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+  }, [selectedCandidate]);
 
   const handleStatusChange = async (candidateId: string, newStatus: string) => {
     setUpdatingId(candidateId);
@@ -193,27 +207,73 @@ export const DiscoveriesPage: React.FC<DiscoveriesPageProps> = ({
                 </div>
               </div>
 
-              {/* Crucial University Prompt Section: "Why did TRIO identify this pattern?" */}
-              <div className="p-5 rounded-xl bg-gradient-to-r from-trio-secondary to-slate-900 border border-trio-cyan/30">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-trio-cyan mb-2">
-                  <Sparkles className="w-4 h-4" />
-                  <span>Why Did TRIO Identify This Pattern?</span>
+              {/* Crucial Explainability Section: Root-Cause Sensor Attribution & D/T/A Breakdown */}
+              <div className="p-5 rounded-xl bg-gradient-to-r from-trio-secondary to-stone-900/90 border border-trio-cyan/30 space-y-4">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-trio-cyan mb-2">
+                    <Sparkles className="w-4 h-4" />
+                    <span>Why Did TRIO Identify This Pattern?</span>
+                  </div>
+                  <p className="text-xs text-stone-200 leading-relaxed">
+                    {selectedCandidate.explanation}
+                  </p>
                 </div>
-                <p className="text-xs text-slate-200 leading-relaxed mb-3">
-                  {selectedCandidate.explanation}
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono pt-3 border-t border-slate-800">
-                  <div className="bg-slate-900/80 p-2 rounded border border-slate-800">
-                    <span className="text-slate-500 text-[10px] block">Cluster Density:</span>
+
+                {/* Tri-Factor D / T / A Decomposition */}
+                <div className="pt-3 border-t border-stone-800">
+                  <div className="flex items-center justify-between text-[11px] font-mono text-stone-400 mb-1.5">
+                    <span className="flex items-center gap-1.5 text-stone-300 font-semibold">
+                      <Target className="w-3.5 h-3.5 text-orange-400" />
+                      Tri-Factor Contradiction Breakdown (C = 0.40D + 0.35T + 0.25A)
+                    </span>
+                    <span className="text-orange-300 font-bold tabular-nums">C = {selectedCandidate.mean_contradiction_score}</span>
+                  </div>
+                  <div className="w-full h-2.5 rounded-full bg-stone-950 overflow-hidden flex border border-stone-800">
+                    <div className="h-full bg-orange-500" style={{ width: '40%' }} title="Prototype Distance (D): 40% weight" />
+                    <div className="h-full bg-yellow-400" style={{ width: '35%' }} title="Temporal Drift (T): 35% weight" />
+                    <div className="h-full bg-amber-600" style={{ width: '25%' }} title="Distributional Anomaly (A): 25% weight" />
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] font-mono text-stone-400 mt-1.5">
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-500" /> Prototype Dist (D): 40%</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-400" /> Temporal Drift (T): 35%</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-600" /> Anomaly (A): 25%</span>
+                  </div>
+                </div>
+
+                {/* Ranked Root-Cause Sensor Attribution */}
+                {rankedAttribution.length > 0 && (
+                  <div className="pt-3 border-t border-stone-800">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-stone-400 block mb-2">
+                      Top Root-Cause Sensor Attribution (% Share of Total Drift)
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                      {rankedAttribution.slice(0, 3).map((item, idx) => (
+                        <div key={item.sensor} className="p-2.5 rounded-lg bg-stone-950/70 border border-stone-800">
+                          <div className="flex items-center justify-between text-[11px] font-mono mb-1">
+                            <span className="text-stone-200 font-semibold truncate">#{idx + 1} {item.sensor}</span>
+                            <span className="text-orange-300 font-bold tabular-nums">{item.pct}%</span>
+                          </div>
+                          <div className="w-full h-1.5 rounded-full bg-stone-800 overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-orange-500 to-amber-400 rounded-full" style={{ width: `${item.pct}%` }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono pt-3 border-t border-stone-800">
+                  <div className="bg-stone-900/80 p-2 rounded border border-stone-800">
+                    <span className="text-stone-500 text-[10px] block">Cluster Density:</span>
                     <span className="text-trio-green font-bold">{selectedCandidate.cluster_density} (High cohesion)</span>
                   </div>
-                  <div className="bg-slate-900/80 p-2 rounded border border-slate-800">
-                    <span className="text-slate-500 text-[10px] block">Mean Contradiction (C):</span>
+                  <div className="bg-stone-900/80 p-2 rounded border border-stone-800">
+                    <span className="text-stone-500 text-[10px] block">Mean Contradiction (C):</span>
                     <span className="text-trio-amber font-bold">{selectedCandidate.mean_contradiction_score}</span>
                   </div>
-                  <div className="bg-slate-900/80 p-2 rounded border border-slate-800">
-                    <span className="text-slate-500 text-[10px] block">Duration / Persistence:</span>
-                    <span className="text-purple-300 font-bold">{selectedCandidate.observation_count} Timesteps</span>
+                  <div className="bg-stone-900/80 p-2 rounded border border-stone-800">
+                    <span className="text-stone-500 text-[10px] block">Duration / Persistence:</span>
+                    <span className="text-yellow-300 font-bold">{selectedCandidate.observation_count} Timesteps</span>
                   </div>
                 </div>
               </div>
