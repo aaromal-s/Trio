@@ -1,4 +1,4 @@
-# TRIO 3.0: Comprehensive System Architecture & Technical Specification
+# TRIO 3.0: Comprehensive System Architecture & Function-by-Function Technical Specification
 
 > **Official Project Title**: TRIO — Contradiction-Guided Tri-Memory Unsupervised Learning for Industrial SCADA Anomaly & Novel Operational Regime Discovery  
 > **Repository**: [https://github.com/aaromal-s/Trio](https://github.com/aaromal-s/Trio)  
@@ -11,20 +11,17 @@
 ## 1. Executive Summary & Problem Formulation
 
 ### 1.1 Industrial Context & The "Alarm Fatigue" Crisis
-Modern industrial automation systems—such as municipal water treatment plants, urban railway networks, chemical refineries, and power grids—generate millions of time-series SCADA (Supervisory Control and Data Acquisition) observations daily. Traditional industrial monitoring relies on static high/low boundary thresholds defined in programmable logic controllers (PLCs). Under standard operating conditions (governed by **IEC 62682** / **ISA 18.2**), operators face up to **10,000 alarms per day**, where **over 95% are nuisance alarms** triggered by transient hydraulic flutter, mechanical vibration noise, or momentary sensor chatter.
-
-When operators are overwhelmed by false alarms, they inevitably silence alerts without investigation. Consequently, genuine, slow-building multi-sensor degradation remains undetected until catastrophic failure forces an emergency shutdown.
+Modern industrial automation systems—such as municipal water treatment plants, urban railway networks, chemical refineries, and power grids—generate millions of time-series SCADA (Supervisory Control and Data Acquisition) observations daily. Traditional monitoring relies on static high/low thresholds defined in programmable logic controllers (PLCs). Under standard operating conditions (**IEC 62682** / **ISA 18.2**), operators face up to **10,000 alarms per day**, where **over 95% are nuisance alarms** triggered by transient hydraulic flutter, mechanical vibration noise, or momentary sensor chatter.
 
 ### 1.2 The "Unknown Unknowns" Challenge
-Existing predictive maintenance tools suffer from two foundational limitations:
-1. **Supervised Learning Failure**: Supervised algorithms require large quantities of labeled failure data. In mission-critical infrastructure, failures are rare, safety interlocks intervene before destruction, and unknown failure modes have never been cataloged in training data.
-2. **Vanilla Unsupervised Failure**: Standard outlier detectors (Isolation Forest, One-Class SVM, Mahalanobis distance) evaluate data points in isolation. They treat any unfamiliar observation as an immediate binary fault, failing to differentiate between an **isolated transient spike** and a **persistent, coherent, novel operational regime** (e.g., secondary pump cavitation, filter fouling drift, or emergent compressor thermal overload).
+1. **Supervised Learning Failure**: Supervised algorithms require large quantities of labeled failure data. In mission-critical infrastructure, failures are rare and novel degradation modes are uncataloged.
+2. **Vanilla Unsupervised Failure**: Standard outlier detectors (Isolation Forest, One-Class SVM, Mahalanobis distance) evaluate points in isolation and cannot distinguish between an **isolated transient spike** and a **persistent, coherent, novel operational regime**.
 
 ### 1.3 The TRIO Solution
 **TRIO** introduces a biologically-inspired, tri-tier memory architecture that operates purely **unsupervised**:
-* **Short-Term Memory (STM)** dampens high-frequency transient chatter within a sliding FIFO buffer (eliminating nuisance alarms).
+* **Short-Term Memory (STM)** dampens high-frequency transient chatter inside a sliding FIFO buffer.
 * **Long-Term Memory (LTM)** validates ongoing operations against verified baseline regime prototypes.
-* **Contradiction Memory (CM)** accumulates sustained multi-sensor contradictions and applies density-based spatial clustering (DBSCAN) to discover, characterize, and isolate **novel unknown operational states** before catastrophic failure occurs.
+* **Contradiction Memory (CM)** accumulates sustained multi-sensor discrepancies and applies DBSCAN density clustering to isolate and characterize **unknown operational regimes** before catastrophic failure occurs.
 
 ---
 
@@ -53,31 +50,23 @@ flowchart TD
     end
 ```
 
-### 2.1 The Unified Contradiction Scoring Formulation
-Every incoming observation vector $x_t \in \mathbb{R}^d$ is assigned a continuous, normalized contradiction score $\mathcal{C}(x_t) \in [0, 1]$:
+### 2.1 Unified Contradiction Scoring Formulation
+Every incoming observation vector $x_t \in \mathbb{R}^d$ receives a normalized contradiction score $\mathcal{C}(x_t) \in [0, 1]$:
 
 $$\mathcal{C}(x_t) = \alpha \cdot \mathcal{D}(x_t, \text{LTM}) + \beta \cdot \mathcal{T}(x_t, \text{STM}) + \gamma \cdot \mathcal{A}(x_t)$$
 
-where $\alpha, \beta, \gamma \ge 0$ and $\alpha + \beta + \gamma = 1.0$ (calibrated defaults: $\alpha = 0.40$, $\beta = 0.35$, $\gamma = 0.25$).
+where $\alpha, \beta, \gamma \ge 0$ and $\alpha + \beta + \gamma = 1.0$ (calibrated defaults: $\alpha = 0.40, \beta = 0.35, \gamma = 0.25$, threshold $\tau = 0.32$).
 
-#### 1. Prototype Distance Metric ($\mathcal{D}$)
-Evaluates whether $x_t$ deviates from established operating regimes stored in LTM. Let $\mu_k$ be the centroid of known prototype $k$, and $r_k$ be its 95th-percentile cluster dispersion radius:
-
-$$\mathcal{D}(x_t, \text{LTM}) = 1 - \exp\left(-\frac{1}{2}\left[\max\left(0, \frac{\min_{k} \|x_t - \mu_k\|_2}{r_k} - 0.75\right)\right]^2\right)$$
-
-#### 2. Temporal Inconsistency Metric ($\mathcal{T}$)
-Evaluates whether $x_t$ violates immediate physical process momentum relative to the recent STM sliding window ($N = 30$ observations):
-
-$$\mathcal{T}(x_t, \text{STM}) = 1 - \exp\left(-0.4\left[\max\left(0, \|x_t - \bar{x}_{\text{STM}}\|_2 - 0.5\right)\right]^2\right)$$
-
-#### 3. Distributional Anomaly Metric ($\mathcal{A}$)
-Calibrated against baseline density using an Isolation Forest estimator fitted solely on the training baseline ($s(x_t)$ raw score, $s_{0.05}$ 5th-percentile threshold):
-
-$$\mathcal{A}(x_t) = \frac{1}{1 + \exp\left(25.0 \cdot (s(x_t) - s_{0.05})\right)}$$
+1. **Prototype Distance Metric ($\mathcal{D}$)**:
+   $$\mathcal{D}(x_t, \text{LTM}) = 1 - \exp\left(-\frac{1}{2}\left[\max\left(0, \frac{\min_{k} \|x_t - \mu_k\|_2}{r_k} - 0.75\right)\right]^2\right)$$
+2. **Temporal Inconsistency Metric ($\mathcal{T}$)**:
+   $$\mathcal{T}(x_t, \text{STM}) = 1 - \exp\left(-0.4\left[\max\left(0, \|x_t - \bar{x}_{\text{STM}}\|_2 - 0.5\right)\right]^2\right)$$
+3. **Distributional Anomaly Metric ($\mathcal{A}$)**:
+   $$\mathcal{A}(x_t) = \frac{1}{1 + \exp\left(25.0 \cdot (s(x_t) - s_{0.05})\right)}$$
 
 ### 2.2 Zero-Leakage Chronological Validation
-1. **Chronological Splitting**: $t_{\text{train}} \cap t_{\text{test}} = \emptyset$ such that $\max(t_{\text{train}}) < \min(t_{\text{test}})$. Shuffling is explicitly disabled.
-2. **Leak-Free Scaling**: Feature transformation parameters ($\mu, \sigma$) via `StandardScaler` are fitted strictly on $t_{\text{train}}$ and applied to $t_{\text{test}}$ via `transform()`.
+1. **Chronological Splitting**: $t_{\text{train}} \cap t_{\text{test}} = \emptyset$ where $\max(t_{\text{train}}) < \min(t_{\text{test}})$; shuffling is disabled.
+2. **Leak-Free Scaling**: `StandardScaler` ($\mu, \sigma$) is fitted strictly on $t_{\text{train}}$ and applied to $t_{\text{test}}$ via `transform()`.
 
 ---
 
@@ -85,292 +74,269 @@ $$\mathcal{A}(x_t) = \frac{1}{1 + \exp\left(25.0 \cdot (s(x_t) - s_{0.05})\right
 
 ```
 D:\movie\PROJECT\
-├── .gitignore                                      # Git exclusion rules (venv, db, raw 200MB CSVs)
-├── .python-version                                 # Pinned Python 3.11.10 for Render binary wheels
-├── Procfile                                        # Container entrypoint (python -m uvicorn ...)
-├── render.yaml                                     # Render infrastructure-as-code specification
-├── requirements.txt                                # Root dependency proxy (-r backend/requirements.txt)
-├── start_all.bat                                   # 1-Click concurrent launcher (backend + frontend)
-├── start_backend.bat                               # Dedicated backend launcher (ports 8000/8001)
-├── start_frontend.bat                              # Dedicated frontend launcher (port 5173)
-├── README.md                                       # Architectural overview & setup guide
+├── .gitignore / .python-version / Procfile / render.yaml / requirements.txt
+├── start_all.bat / start_backend.bat / start_frontend.bat
 ├── TRIO_3.0_SYSTEM_ARCHITECTURE_AND_PROJECT_SPECIFICATION.md
 ├── TRIO_EXECUTIVE_PRESENTATION_AND_DEMO_GUIDE.md
-│
-├── Dataset/                                        # Reference Datasets & Benchmark Documentation
-│   ├── Data Description_Metro.pdf                  # IEEE DSAA 2021 paper specification
-│   ├── description.txt                             # UCI Hydraulic Systems test rig documentation
-│   ├── profile.txt                                 # Hydraulic degradation ground truth (2,205 cycles)
-│   ├── MetroPT3_AirCompressor_Preprocessed.csv     # 2,300-row operational MetroPT-3 compressor stream
-│   └── Hydraulic_Test_Rig_Preprocessed.csv         # 2,205-cycle 45-feature aggregated hydraulic dataset
-│
-├── backend/                                        # FastAPI High-Performance Python Backend
-│   ├── .env.example                                # Environment configuration template
-│   ├── .python-version                             # Python 3.11.10 runtime pinning
-│   ├── Dockerfile                                  # Multi-stage production container image
-│   ├── Procfile                                    # Backend web process definition
-│   ├── requirements.txt                            # Pinned Python dependencies
-│   ├── trio.db                                     # Initialized SQLite database with seeded accounts
+├── Dataset/
+│   ├── MetroPT3_AirCompressor_Preprocessed.csv
+│   ├── Hydraulic_Test_Rig_Preprocessed.csv
+│   └── Data Description_Metro.pdf / description.txt / profile.txt
+├── backend/
 │   ├── app/
-│   │   ├── main.py                                 # FastAPI entrypoint, lifespan, CORS regex
-│   │   ├── api/                                    # Domain REST Routers (31 Endpoints)
-│   │   │   ├── auth.py                             # Argon2 login, sessions, profiles, password reset
-│   │   │   ├── dashboard.py                        # KPI aggregation, multi-sensor trends, activity logs
-│   │   │   ├── datasets.py                         # Dynamic CSV ingestion, SWaT & MetroPT-3 endpoints
-│   │   │   ├── discoveries.py                      # Discovery candidate listing, audit, promotion
-│   │   │   ├── evaluation.py                       # Benchmark metrics & CSV export
-│   │   │   ├── memory.py                           # Real-time STM, LTM, and CM state endpoints
-│   │   │   └── models.py                           # Training execution, weight calibration, history
-│   │   ├── core/                                   # Infrastructure & Security
-│   │   │   ├── config.py                           # Pydantic v2 settings & CORS origins
-│   │   │   ├── database.py                         # Dual-engine SQLite / PostgreSQL driver
-│   │   │   ├── email_service.py                    # Transactional email service (Resend API)
-│   │   │   ├── rate_limiter.py                     # Sliding-window token-bucket rate limiter
-│   │   │   └── security.py                         # Argon2id password hashing & bearer tokens
-│   │   ├── ml/                                     # Machine Learning & Scientific Computing Engine
-│   │   │   ├── baselines.py                        # K-Means, DBSCAN, Isolation Forest baselines
-│   │   │   ├── evaluator.py                        # Multi-metric evaluator (F1, Precision, Recall, ARI, NMI)
-│   │   │   ├── preprocessor.py                     # Universal CSV cleaner & chronological splitter
-│   │   │   ├── synthetic_generator.py              # Procedural SWaT 6-stage simulator
-│   │   │   └── trio_model.py                       # Core Tri-Memory classes (STM, LTM, CM, TRIOModel)
-│   │   └── services/
-│   │       └── state_service.py                    # Thread-safe global state & dataset controller
-│   ├── data/                                       # Active Production Datasets
-│   │   ├── MetroPT3_AirCompressor_Operational.csv  # Default active dataset (2,300 rows x 20 cols)
-│   │   └── Hydraulic_Test_Rig_Preprocessed.csv     # Secondary hydraulic test rig dataset
-│   ├── scripts/                                    # Verification & Calibration Scripts
-│   │   ├── calibrate_metro.py                      # Threshold sensitivity calibration (τ = 0.32)
-│   │   ├── inspect_datasets.py                     # Statistical dataset analyzer
-│   │   ├── preprocess_all_datasets.py              # Automated raw dataset transformation pipeline
-│   │   ├── test_train_metro.py                     # Standalone model training validator
-│   │   ├── verify_all_endpoints.py                 # 31-endpoint integration test suite
-│   │   └── verify_upload_scenarios.py              # CSV upload edge case suite
-│   └── tests/                                      # Automated Pytest Suite (75 passing tests)
-│
-├── frontend/                                       # React 19 + TypeScript + Vite 8 Web Interface
-│   ├── index.html                                  # Root HTML + Inter, Space Grotesk, JetBrains Mono
-│   ├── package.json                                # Dependencies (React 19, Recharts, Framer Motion, Tailwind)
-│   ├── vite.config.ts                              # Vite 8 config with manual chunk splitting & dev proxy
-│   ├── tailwind.config.js                          # Volcanic Charcoal & Amber Copper color tokens
-│   ├── vercel.json                                 # Vercel SPA + /api/* reverse proxy to Render
-│   └── src/
-│       ├── App.tsx                                 # Root router, Ctrl+K shortcut, report & modal orchestrator
-│       ├── main.tsx                                # React DOM mount
-│       ├── index.css                               # CSS variables, SCADA grid & iOS Liquid Glass classes
-│       ├── context/
-│       │   └── TelemetryContext.tsx                # Auto-polling engine (2s/5s/10s/30s) with overlap lock
-│       ├── services/
-│       │   ├── api.ts                              # REST client, TypeScript interfaces, URL fallback
-│       │   └── mockData.ts                         # Graceful fallback telemetry data
-│       ├── utils/
-│       │   └── exportIncidentReport.ts             # One-click Markdown shift & discovery report exporter
-│       ├── components/
-│       │   ├── brand/TrioLogo.tsx                  # Animated SVG Tri-Memory emblem
-│       │   ├── layout/Navbar.tsx                   # Floating Liquid Glass top bar, Ctrl+K trigger, clock
-│       │   ├── layout/Sidebar.tsx                  # Responsive nav with spring active indicator
-│       │   ├── common/
-│       │   │   ├── IndustrialHeroConsole.tsx       # Interactive SCADA oscilloscope & τ = 0.32 meter
-│       │   │   ├── TriMemoryPipelineMonitor.tsx    # Live STM/LTM/CM throughput & routing status
-│       │   │   └── Interactive3DBackground.tsx     # Three.js ambient geometric mesh
-│       │   ├── modals/
-│       │   │   ├── CommandPaletteModal.tsx         # Ctrl+K fuzzy-search navigation & quick actions
-│       │   │   ├── SettingsModal.tsx               # Interface density, polling rate, API diagnostics
-│       │   │   ├── ProfileModal.tsx                # Operator profile, avatar upload, session management
-│       │   │   └── VivaGuideModal.tsx              # Interactive architecture & mathematical specs
-│       │   └── pages/                              # 8 Specialized Application Views
-│       │       ├── LandingPage.tsx                 # Hero, Liquid Glass nav, SCADA console, methodology
-│       │       ├── LoginPage.tsx                   # Argon2 login, password reset, quick-demo autofill
-│       │       ├── OverviewPage.tsx                # KPIs, Anomaly Replay Scrubber, What-If τ slider, charts
-│       │       ├── TriMemoryPage.tsx               # STM window, LTM prototypes, CM discrepancy records
-│       │       ├── DiscoveriesPage.tsx             # Candidate inspector, D/T/A & sensor % attribution
-│       │       ├── ModelLabPage.tsx                # Interactive α, β, γ weight tuning & live retraining
-│       │       ├── EvaluationPage.tsx              # Comparative benchmarks vs baselines & CSV export
-│       │       └── DatasetsPage.tsx                # Universal CSV upload, raw preview, MetroPT-3/SWaT swap
-│       └── tests/                                  # Vitest Automated Suite (21 passing tests)
-│
-└── research/                                       # Academic Validation & Viva Guide
-    ├── run_scientific_validation.py
-    ├── scientific_validation_results.json
-    └── viva_guide.md
+│   │   ├── main.py
+│   │   ├── api/ (auth.py, dashboard.py, datasets.py, discoveries.py, evaluation.py, memory.py, models.py)
+│   │   ├── core/ (config.py, database.py, email_service.py, rate_limiter.py, security.py)
+│   │   ├── ml/ (trio_model.py, preprocessor.py, baselines.py, evaluator.py, synthetic_generator.py)
+│   │   └── services/ (state_service.py)
+│   ├── data/ (MetroPT3_AirCompressor_Operational.csv, Hydraulic_Test_Rig_Preprocessed.csv)
+│   ├── scripts/ (calibrate_metro.py, inspect_datasets.py, preprocess_all_datasets.py, verify_all_endpoints.py, ...)
+│   └── tests/ (75 Pytest tests)
+└── frontend/
+    ├── index.html / package.json / vite.config.ts / tailwind.config.js / vercel.json
+    └── src/
+        ├── App.tsx / main.tsx / index.css
+        ├── context/TelemetryContext.tsx
+        ├── services/ (api.ts, mockData.ts)
+        ├── utils/exportIncidentReport.ts
+        ├── components/
+        │   ├── brand/ (TrioLogo.tsx, Trio3DLogo.tsx)
+        │   ├── layout/ (Navbar.tsx, Sidebar.tsx)
+        │   ├── common/ (IndustrialHeroConsole.tsx, TriMemoryPipelineMonitor.tsx, Interactive3DBackground.tsx)
+        │   ├── 3d/ (TriMemoryDigitalTwin3D.tsx, TriMemoryMiniVisualizer3D.tsx)
+        │   ├── modals/ (CommandPaletteModal.tsx, SettingsModal.tsx, ProfileModal.tsx, VivaGuideModal.tsx)
+        │   └── pages/ (LandingPage.tsx, LoginPage.tsx, OverviewPage.tsx, DatasetsPage.tsx, ModelLabPage.tsx, TriMemoryPage.tsx, DiscoveriesPage.tsx, EvaluationPage.tsx)
+        └── tests/ (21 Vitest tests)
 ```
 
 ---
 
-## 4. Detailed Backend Module & Function Reference
+## 4. Exhaustive Backend Function-by-Function Reference
 
-### 4.1 Core Tri-Memory Engine ([backend/app/ml/trio_model.py](file:///d:/movie/PROJECT/backend/app/ml/trio_model.py))
+### 4.1 Core Infrastructure (`backend/app/core/`)
 
-#### `class ShortTermMemory`
-Maintains a fixed-capacity sliding window (`capacity = 30`) of recent normalized sensor vectors.
-* `push(observation, timestamp)`: Appends the current observation vector and timestamp to the circular FIFO buffer.
-* `clear()`: Resets the buffer between runs or dataset hot-swaps.
-* `is_ready() -> bool`: Returns `True` once at least 5 observations are buffered so rolling statistics are statistically stable.
-* `get_recent_window() -> np.ndarray`: Returns the stacked $(N \times d)$ matrix of recent observations.
-* `get_moving_average() -> np.ndarray`: Computes the per-sensor rolling mean $\bar{x}_{\text{STM}}$.
-* `get_variance() -> np.ndarray`: Computes per-sensor rolling variance $\sigma^2_{\text{STM}}$.
-* `get_velocity() -> np.ndarray`: Computes the mean first-order difference $\Delta v = \frac{1}{N-1}\sum (x_{i+1} - x_i)$ capturing process momentum.
-* `to_dict() -> Dict[str, Any]`: Serializes current buffer utilization, rolling mean, variance, and velocity for `/api/memory/stm`.
+#### [backend/app/core/config.py](file:///d:/movie/PROJECT/backend/app/core/config.py)
+* `class Settings(BaseModel)`: Holds Pydantic v2 runtime configuration (`APP_NAME`, `ENVIRONMENT`, `ALLOWED_ORIGINS`, `DATABASE_URL`, `RESEND_API_KEY`, `RATE_LIMIT_LOGIN`, `DEFAULT_ADMIN_PASSWORD`).
 
-#### `class LongTermMemory`
-Stores verified operating regime centroids and dispersion envelopes learned from baseline telemetry.
-* `fit_known_states(X_train, n_clusters=3)`: Runs unsupervised K-Means on normalized training data $t_{\text{train}}$ to extract prototype centroids $\{\mu_1, \dots, \mu_K\}$, 95th-percentile dispersion radii $\{r_1, \dots, r_K\}$, and activation counts.
-* `min_distance(observation) -> Tuple[float, int]`: Computes the minimum Euclidean distance from $x_t$ to all known centroids and returns `(normalized_distance, nearest_prototype_id)`.
-* `to_dict(feature_names) -> List[Dict[str, Any]]`: Exports prototype vectors, radii, and feature mappings for `/api/memory/ltm`.
+#### [backend/app/core/database.py](file:///d:/movie/PROJECT/backend/app/core/database.py)
+* `_get_database_url() -> str`: Resolves `DATABASE_URL` from environment or defaults to local `sqlite:///backend/trio.db`.
+* `_is_postgres(url: str) -> bool`: Checks whether the active connection string targets PostgreSQL (`postgres://` or `postgresql://`).
+* `_sqlite_path(url: str) -> str`: Extracts the filesystem path from a SQLite URI.
+* `_translate_sql(sql: str, is_pg: bool) -> str`: Rewrites SQLite `?` placeholders and DDL dialect tokens into PostgreSQL `%s` syntax transparently.
+* `_get_pg_pool()`: Lazily initializes a thread-safe `psycopg2` connection pool when running in PostgreSQL mode.
+* `get_connection()`: Context manager yielding an active SQLite or pooled PostgreSQL connection with automatic commit/rollback.
+* `run_migrations()`: Creates all required tables (`users`, `sessions`, `password_resets`, `training_history`, `discovery_states`, `audit_logs`) idempotently on startup.
+* `_ph(n: int) -> str` & `_phk() -> str`: Generates parameterized SQL placeholder strings (`?` vs `%s`) for cross-database compatibility.
+* `execute_query(sql, params, fetch)`: Executes parameterized `SELECT` queries returning `"one"`, `"all"`, or `"val"`.
+* `execute_write(sql, params) -> int`: Executes parameterized `INSERT`/`UPDATE`/`DELETE` statements and returns affected row count.
+* `seed_default_users(hash_fn)`: Seeds the evaluator demo account (`evaluator` / `trio2026demo`) with Argon2id hashes if not already present.
+* `seed_bootstrap_admin(hash_fn)`: Seeds the administrator account (`12406834` / `123456`) with optional forced-password-change flag.
+* `migrate_sqlite_to_postgres(sqlite_path, pg_url)`: Utility to migrate local SQLite records into a production PostgreSQL database.
 
-#### `class ContradictionMemory`
-Isolated buffer (`max_records = 5000`) storing observations whose contradiction score exceeds threshold $\tau$.
-* `add(observation, timestamp, score, d_score, t_score, a_score)`: Logs the feature vector, timestamp, combined score $\mathcal{C}(x_t)$, and individual $\mathcal{D}, \mathcal{T}, \mathcal{A}$ components.
-* `clear()`: Flushes accumulated records upon retraining or dataset swap.
-* `get_points() -> np.ndarray`: Returns the $(M \times d)$ matrix of stored contradictory observations for DBSCAN clustering.
-* `to_summary() -> Dict[str, Any]`: Returns record count, score distribution, and recent entries for `/api/memory/cm`.
+#### [backend/app/core/email_service.py](file:///d:/movie/PROJECT/backend/app/core/email_service.py)
+* `_build_reset_email_html(reset_link, expires_minutes=15) -> str`: Builds the styled HTML template for password recovery emails.
+* `send_password_reset_email(to_email, reset_link)`: Dispatches transactional reset emails via the Resend HTTP API (or logs locally in development mode when no API key is configured).
 
-#### `class DiscoveryCandidate`
-Represents a cohesive spatial cluster discovered inside Contradiction Memory.
-* `to_dict(feature_names) -> Dict[str, Any]`: Serializes `candidate_id` (e.g., `CAND-2026-001`), observation count, `first_detected` / `last_detected` timestamps, `mean_contradiction_score`, `cluster_density`, `feature_deltas` ($\Delta\sigma$ relative to nearest LTM prototype), `prototype_vector`, human-readable `explanation`, and governance `status` (`Pending`, `Under Validation`, `Confirmed`, `Rejected`).
+#### [backend/app/core/rate_limiter.py](file:///d:/movie/PROJECT/backend/app/core/rate_limiter.py)
+* `_init_redis()`: Connects to Redis if `REDIS_URL` is configured; otherwise falls back to in-memory sliding windows.
+* `_check_memory(key, max_requests, window_seconds)`: Thread-safe sliding-window token-bucket check in Python memory.
+* `_check_redis(key, max_requests, window_seconds)`: Atomic Redis sorted-set sliding-window check for distributed deployments.
+* `check_rate_limit(key, max_requests, window_seconds)`: Public rate-limiter entrypoint routing between Redis and memory.
+* `is_redis_available() -> bool` & `get_rate_limiter_info() -> dict`: Exposes backend diagnostics for `/api/health`.
+* `reset_rate_limiter_memory()`: Clears in-memory buckets during automated test isolation.
 
-#### `class TRIOModel`
-Top-level orchestrator uniting STM, LTM, CM, and Isolation Forest.
-* `update_weights(alpha, beta, gamma)`: Re-normalizes $\alpha + \beta + \gamma = 1.0$ dynamically from Model Lab requests.
-* `train(X_train, feature_names, n_known_clusters=3)`: Fits `LongTermMemory` centroids and baseline `IsolationForest` strictly on $t_{\text{train}}$.
-* `compute_contradiction_score(observation) -> Tuple[float, float, float, float]`: Computes $(\mathcal{C}, \mathcal{D}, \mathcal{T}, \mathcal{A})$ for a single observation vector.
-* `process_stream(X_test, timestamps) -> List[Dict[str, Any]]`: Streams chronologically ordered test observations through STM, evaluates $\mathcal{C}(x_t)$, suppresses isolated transients, and routes sustained contradictions ($\mathcal{C} \ge \tau$) into CM.
-* `discover_unknown_states(timestamps)`: Executes DBSCAN ($\text{MinPts} = 8, \epsilon = 0.65$) on CM points once $\text{MinEvidence} \ge 15$ points accumulate, instantiating `DiscoveryCandidate` objects while discarding sparse noise.
-* `update_candidate_status(candidate_id, new_status) -> bool`: Applies human-in-the-loop governance transitions.
+#### [backend/app/core/security.py](file:///d:/movie/PROJECT/backend/app/core/security.py)
+* `class SecurityHeadersMiddleware(BaseHTTPMiddleware)`: Injects `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, and `Strict-Transport-Security` headers on every HTTP response.
 
 ---
 
-### 4.2 Universal Data Ingestion & Zero-Leakage Pipeline ([backend/app/ml/preprocessor.py](file:///d:/movie/PROJECT/backend/app/ml/preprocessor.py))
+### 4.2 Machine Learning & Data Engine (`backend/app/ml/` & `backend/app/services/`)
 
-#### `class DataPreprocessor`
-* `_is_timestamp_col(col_name, series) -> bool`: Detects timestamp columns across 12 ISO-8601 and industrial SCADA formats.
-* `_try_clean_numeric_series(series) -> Optional[pd.Series]`: Converts European comma decimals (`25,4` $\to$ `25.4`), strips unit suffixes, and coerces numeric types safely.
-* `validate_dataset(df) -> Dict[str, Any]`: Inspects uploaded DataFrames for minimum row counts, numeric feature availability, missing value ratios, and transposed sensor-as-row matrices.
-* `clean_and_prepare(df, ...)`: Auto-transposes inverted matrices, sorts chronologically by detected timestamp, imputes isolated NaNs via forward/backward fill, and extracts numeric sensor channels.
-* `chronological_split(df) -> Tuple[pd.DataFrame, pd.DataFrame]`: Enforces strict non-shuffled 70/30 temporal split ($\max(t_{\text{train}}) < \min(t_{\text{test}})$).
-* `fit_transform_train(train_df, feature_cols) -> np.ndarray`: Fits `StandardScaler` exclusively on training data.
-* `transform_test(test_df) -> np.ndarray`: Transforms test data using frozen training statistics (zero data leakage).
+#### [backend/app/ml/trio_model.py](file:///d:/movie/PROJECT/backend/app/ml/trio_model.py)
+* `class ShortTermMemory`:
+  * `__init__(capacity=30)`: Initializes a circular `collections.deque` buffer of length `30`.
+  * `push(observation, timestamp)`: Appends the current normalized vector $x_t$ and timestamp.
+  * `clear()`: Empties the FIFO buffer.
+  * `is_ready() -> bool`: Returns `True` when $\ge 5$ observations are buffered.
+  * `get_recent_window() -> np.ndarray`: Stacks buffered vectors into an $(N \times d)$ matrix.
+  * `get_moving_average() -> np.ndarray`: Computes rolling mean $\bar{x}_{\text{STM}}$.
+  * `get_variance() -> np.ndarray`: Computes rolling sensor variance $\sigma^2_{\text{STM}}$.
+  * `get_velocity() -> np.ndarray`: Computes mean temporal gradient $\Delta v = \frac{1}{N-1}\sum (x_{i+1} - x_i)$.
+  * `to_dict() -> Dict`: Serializes utilization %, mean, variance, and velocity for `/api/memory/stm`.
+* `class LongTermMemory`:
+  * `fit_known_states(X_train, n_clusters=3)`: Runs K-Means on $t_{\text{train}}$ to learn prototype centroids $\mu_k$ and 95th-percentile dispersion radii $r_k$.
+  * `min_distance(observation) -> Tuple[float, int]`: Returns normalized Euclidean distance to nearest $\mu_k$ and its prototype index.
+  * `to_dict(feature_names) -> List[Dict]`: Exports prototype coordinates, radii, and activation counts.
+* `class ContradictionMemory`:
+  * `add(observation, timestamp, score, d_score, t_score, a_score)`: Stores contradictory vectors ($\mathcal{C} \ge \tau$) up to `max_records = 5000`.
+  * `clear()`: Resets stored contradictions.
+  * `get_points() -> np.ndarray`: Returns $(M \times d)$ feature matrix for clustering.
+  * `to_summary() -> Dict`: Summarizes total records, score distribution, and recent alerts.
+* `class DiscoveryCandidate`:
+  * `to_dict(feature_names) -> Dict`: Formats `candidate_id`, `observation_count`, `first_detected`, `last_detected`, `mean_contradiction_score`, `cluster_density`, `feature_deltas` ($\Delta\sigma$), `prototype_vector`, `explanation`, and `status`.
+* `class TRIOModel`:
+  * `update_weights(alpha, beta, gamma)`: Re-normalizes $\alpha + \beta + \gamma = 1.0$.
+  * `train(X_train, feature_names, n_known_clusters=3)`: Fits `LongTermMemory` and baseline `IsolationForest` strictly on $t_{\text{train}}$.
+  * `compute_contradiction_score(observation)`: Computes $(\mathcal{C}, \mathcal{D}, \mathcal{T}, \mathcal{A})$.
+  * `process_stream(X_test, timestamps)`: Streams test data chronologically through STM, filters transients, and populates CM.
+  * `discover_unknown_states(timestamps)`: Runs DBSCAN ($\text{MinPts}=8, \epsilon=0.65$) on CM once $\ge 15$ points accumulate to crystallize `DiscoveryCandidate` objects.
+  * `update_candidate_status(candidate_id, new_status) -> bool`: Applies operator governance transitions (`Confirmed`, `Under Validation`, `Rejected`).
+
+#### [backend/app/ml/preprocessor.py](file:///d:/movie/PROJECT/backend/app/ml/preprocessor.py)
+* `class DataPreprocessor`:
+  * `_is_timestamp_col(col_name, series) -> bool`: Detects timestamp columns across 12 ISO-8601 and SCADA formats.
+  * `_try_clean_numeric_series(series) -> Optional[pd.Series]`: Parses European comma decimals (`25,4` $\to$ `25.4`) and strips non-numeric units.
+  * `validate_dataset(df) -> Dict`: Checks row counts, numeric columns, missing ratios, and transposed orientation.
+  * `clean_and_prepare(df, ...)`: Auto-transposes sensor-row matrices, enforces chronological sorting, imputes NaNs, and isolates numeric channels.
+  * `chronological_split(df) -> Tuple[pd.DataFrame, pd.DataFrame]`: Splits 70% train / 30% test without shuffling.
+  * `fit_transform_train(train_df, feature_cols)` & `transform_test(test_df)`: Fits `StandardScaler` on train only and transforms test without leakage.
+
+#### [backend/app/ml/baselines.py](file:///d:/movie/PROJECT/backend/app/ml/baselines.py), [evaluator.py](file:///d:/movie/PROJECT/backend/app/ml/evaluator.py), [synthetic_generator.py](file:///d:/movie/PROJECT/backend/app/ml/synthetic_generator.py)
+* `BaselinePipelines.run_kmeans(X_train, X_test, n_clusters=4)`: K-Means distance-based anomaly baseline.
+* `BaselinePipelines.run_dbscan(X_train, X_test, eps=0.8, min_samples=5)`: Raw density clustering baseline.
+* `BaselinePipelines.run_isolation_forest(X_train, X_test, contamination=0.08)`: Point-wise Isolation Forest baseline.
+* `ModelEvaluator.compute_metrics(...)`: Computes Precision, Recall, F1-Score, False Discovery Rate (FDR), Detection Delay, Adjusted Rand Index (ARI), Normalized Mutual Information (NMI), and inference latency.
+* `generate_synthetic_industrial_data(...)`: Procedural 6-stage SWaT water treatment simulator (`FIT101`, `LIT101`, `FIT201`, `AIT202`, `DPIT301`, `AIT402`) with injected drift and transient spikes.
+
+#### [backend/app/services/state_service.py](file:///d:/movie/PROJECT/backend/app/services/state_service.py)
+* `StateService.load_initial_dataset()`: Boots with `MetroPT3_AirCompressor_Operational.csv` (`is_simulated = False`) and executes initial training.
+* `StateService.load_default_synthetic(n_samples=1500)`: Fallback SWaT generator.
+* `StateService.set_dataset(df, name, is_simulated=False)`: Atomic dataset swap with rollback protection.
+* `StateService.train_all(...)`: Full pipeline orchestration (preprocessing $\to$ chronological split $\to$ `TRIOModel` $\to$ baselines $\to$ metrics).
 
 ---
 
-### 4.3 Thread-Safe Global State Coordinator ([backend/app/services/state_service.py](file:///d:/movie/PROJECT/backend/app/services/state_service.py))
-
-#### `class StateService`
-* `load_initial_dataset()`: Automatically locates and loads `MetroPT3_AirCompressor_Operational.csv` on startup (`is_simulated = False`) and runs initial training.
-* `load_default_synthetic(n_samples=1500)`: Fallback procedural SWaT 6-stage water treatment generator if no CSV is present.
-* `set_dataset(df, name, is_simulated=False)`: Atomically swaps active dataset with transactional rollback protection if validation fails.
-* `train_all(...)`: Coordinates preprocessing, chronological split, `TRIOModel.train()`, `process_stream()`, `discover_unknown_states()`, and comparative baseline evaluation (`K-Means`, `DBSCAN`, `Isolation Forest`).
-
----
-
-### 4.4 REST API Catalogue (31 Endpoints)
+### 4.3 Backend REST API Catalogue (31 Endpoints)
 
 | Domain | Method | Endpoint | Function & Working |
 | :--- | :---: | :--- | :--- |
-| **System** | `GET` | `/` | Service metadata, version, and active status |
-| | `GET` | `/api/health` | Diagnostic health check (DB connectivity, rate limiter, memory) |
-| **Auth** | `POST` | `/api/auth/login` | Argon2id password verification and bearer session token issuance |
-| | `GET` | `/api/auth/profile` | Authenticated operator profile and permissions |
-| | `PUT` | `/api/auth/profile` | Update operator display name, email, and preferences |
-| | `POST` / `PUT` | `/api/auth/avatar` | Multipart avatar image upload and update |
-| | `GET` | `/api/auth/sessions` | List active workstation sessions |
+| **System** | `GET` | `/` | Service metadata, version, and operational status |
+| | `GET` | `/api/health` | Health check (DB connectivity, Redis/memory rate limiter, active model) |
+| **Auth** | `POST` | `/api/auth/login` | Argon2id credential verification and bearer token issuance |
+| | `GET` / `PUT` | `/api/auth/profile` | Fetch or update operator profile metadata and preferences |
+| | `POST` / `PUT` | `/api/auth/avatar` | Upload or update operator profile avatar image |
+| | `GET` | `/api/auth/sessions` | List active login sessions across devices |
 | | `POST` | `/api/auth/sessions/logout-others` | Revoke all other active sessions |
-| | `POST` | `/api/auth/forgot-password` | Issue single-use password reset token via Resend API |
-| **Datasets** | `GET` | `/api/datasets/current` | Active dataset metadata, sensor list, and validation summary |
+| | `POST` | `/api/auth/forgot-password` | Generate single-use password reset link |
+| **Datasets** | `GET` | `/api/datasets/current` | Active dataset metadata, numeric feature list, and validation summary |
 | | `GET` | `/api/datasets/preview` | Paginated raw telemetry preview |
 | | `POST` | `/api/datasets/upload-csv` | Upload custom SCADA CSV with delimiter/decimal auto-detection |
-| | `POST` | `/api/datasets/generate-synthetic` | Generate procedural 6-stage SWaT dataset |
-| | `GET` | `/api/datasets/swat-info` | SUTD iTrust SWaT benchmark documentation |
-| | `GET` | `/api/datasets/metro-info` | MetroPT-3 railway air compressor documentation |
-| | `POST` | `/api/datasets/load-metro` | Hot-swap active dataset to preprocessed MetroPT-3 |
-| **Models** | `GET` | `/api/models/status` | Active model version, $\alpha/\beta/\gamma$ weights, $\tau$, and feature list |
-| | `POST` | `/api/models/train` | Trigger retraining with custom $\alpha, \beta, \gamma$ and $\tau$ |
-| | `GET` | `/api/models/history` | Historical training run logs and metrics |
-| **Memory** | `GET` | `/api/memory/status` | Real-time utilization of STM, LTM, and CM pools |
+| | `POST` | `/api/datasets/generate-synthetic` | Generate procedural SWaT 6-stage dataset |
+| | `GET` | `/api/datasets/swat-info` | SUTD iTrust SWaT testbed specification |
+| | `GET` | `/api/datasets/metro-info` | MetroPT-3 railway air compressor specification |
+| | `POST` | `/api/datasets/load-metro` | Hot-swap active dataset back to MetroPT-3 |
+| **Models** | `GET` | `/api/models/status` | Active model version, $\alpha/\beta/\gamma$ weights, $\tau$, and selected features |
+| | `POST` | `/api/models/train` | Retrain TRIO + baselines with custom hyperparameters |
+| | `GET` | `/api/models/history` | Historical training run audit log |
+| **Memory** | `GET` | `/api/memory/status` | Real-time utilization of STM, LTM, and CM |
 | | `GET` | `/api/memory/stm` | STM sliding window contents, rolling mean, variance, velocity |
-| | `GET` | `/api/memory/ltm` | LTM prototype centroids and 95th-percentile radii |
+| | `GET` | `/api/memory/ltm` | LTM prototype centroids and radii |
 | | `GET` | `/api/memory/cm` | Contradiction Memory records and $\mathcal{C}, \mathcal{D}, \mathcal{T}, \mathcal{A}$ scores |
 | **Discoveries**| `GET` | `/api/discoveries` | List all DBSCAN-isolated operational state candidates |
 | | `GET` | `/api/discoveries/{id}` | Detailed evidence, `feature_deltas`, and centroid coordinates |
-| | `POST` | `/api/discoveries/{id}/status` | Operator governance: `Confirmed`, `Under Validation`, or `Rejected` |
+| | `POST` | `/api/discoveries/{id}/status` | Update governance status (`Confirmed`, `Under Validation`, `Rejected`) |
 | **Dashboard** | `GET` | `/api/dashboard/overview` | Aggregated KPIs, sensor trends, contradiction stream, state distribution |
-| **Evaluation** | `GET` | `/api/evaluation/benchmark` | Comparative metrics (Precision, Recall, F1, FDR, Latency) vs baselines |
+| **Evaluation** | `GET` | `/api/evaluation/benchmark` | Comparative benchmark metrics vs K-Means, DBSCAN, Isolation Forest |
 | | `GET` | `/api/evaluation/export-csv` | Download evaluation benchmark table as CSV |
 
 ---
 
-## 5. Detailed Frontend Architecture & Feature Functions
+## 5. Exhaustive Frontend Function-by-Function Reference
 
-### 5.1 Visual Design System: Volcanic Charcoal, Amber Copper & iOS Liquid Glass
-* **Unified Dark SCADA Palette**: Light mode and theme switching were intentionally removed (`App.tsx`, `Navbar.tsx`, `SettingsModal.tsx`, `index.css`) to enforce a distraction-free, high-contrast industrial control room aesthetic:
-  * **Surfaces**: Volcanic Charcoal (`#0C0A09`), Warm Graphite (`#141210`), Stone Charcoal Cards (`#1C1917`), Warm Borders (`#292524`).
-  * **Accents**: Molten Amber (`#F97316`), Warm Gold (`#FACC15`), Bright Copper (`#FB923C`), Emerald (`#34D399`) for verified health, and Crimson (`#F43F5E`) for critical faults.
-* **Typography**: `Space Grotesk` (`font-display`) for headlines, `Inter` (`font-sans`) for UI copy, and `JetBrains Mono` (`font-mono tabular-nums`) for jitter-free live sensor readouts.
-* **iOS Liquid Glass System ([frontend/src/index.css](file:///d:/movie/PROJECT/frontend/src/index.css))**:
-  * `.liquid-glass-nav`: Floating translucent header bars (`backdrop-filter: blur(26px) saturate(180%)`) with top specular rim highlights.
-  * `.liquid-glass-btn` & `.liquid-glass-primary`: Spring-animated buttons (`cubic-bezier(0.22, 1, 0.36, 1)`) with active press compression (`scale(0.965)`) and diagonal light-refraction shimmer sweeps on hover.
-  * `.liquid-glass-pill`: Frosted capsule surfaces for segmented controls, search triggers, and active navigation items.
+### 5.1 Design System, Entry & Root Orchestration
 
-### 5.2 Application Components & Interactive Functions
+#### [frontend/index.html](file:///d:/movie/PROJECT/frontend/index.html), [frontend/tailwind.config.js](file:///d:/movie/PROJECT/frontend/tailwind.config.js), [frontend/src/index.css](file:///d:/movie/PROJECT/frontend/src/index.css)
+* **Unified Volcanic Charcoal & Amber Copper Palette**: Light mode and theme switching were removed for consistent high-contrast control room visibility (`#0C0A09` background, `#141210` secondary, `#1C1917` card, `#F97316` molten amber primary, `#FACC15` warm gold secondary, `#FB923C` copper).
+* **Typography**: Loads `Space Grotesk` (`font-display`), `Inter` (`font-sans`), and `JetBrains Mono` (`font-mono tabular-nums`).
+* **iOS Liquid Glass CSS Classes**: `.liquid-glass-nav` (floating `blur(26px) saturate(180%)` header with specular rim), `.liquid-glass-btn` / `.liquid-glass-primary` (spring lift, press scale `0.965`, diagonal hover light sweep), `.liquid-glass-pill`, `.glass-card`, and `.bg-scada-grid`.
 
-1. **Application Orchestrator ([frontend/src/App.tsx](file:///d:/movie/PROJECT/frontend/src/App.tsx))**
-   * Manages view routing (`landing`, `login`, `overview`, `datasets`, `models`, `memory`, `discoveries`, `evaluation`), modal states, and global `Ctrl+K` / `Cmd+K` keyboard listener for the Command Palette.
-   * Coordinates `TelemetryContext` polling (`2s` / `5s` / `10s` / `30s`) with in-flight request locking (`inFlightRef`) to prevent overlapping network requests.
+#### [frontend/src/App.tsx](file:///d:/movie/PROJECT/frontend/src/App.tsx)
+* `App()`: Wraps `AppContent` in `<TelemetryProvider>`.
+* `AppContent()`:
+  * Manages `currentView` (`landing`, `login`, `overview`, `datasets`, `models`, `memory`, `discoveries`, `evaluation`), modal visibility (`isSettingsOpen`, `isProfileOpen`, `isVivaOpen`, `isCommandPaletteOpen`), and core state (`overviewData`, `datasetInfo`, `modelStatus`, `discoveries`, `userProfile`).
+  * `useEffect` (Keyboard Shortcut): Listens globally for `Ctrl+K` / `Cmd+K` to toggle `<CommandPaletteModal />`.
+  * `fetchAllData` (`useCallback`): Fetches `/overview`, `/datasets/current`, `/models/status`, `/discoveries`, and `/auth/profile` concurrently via `Promise.all`.
+  * `handleExportReport` (`useCallback`): Invokes `downloadIncidentReport()` with live dashboard state.
+  * `handleResetDemo`: Resets synthetic/demo state via API and refreshes telemetry.
 
-2. **Global Command Palette ([frontend/src/components/modals/CommandPaletteModal.tsx](file:///d:/movie/PROJECT/frontend/src/components/modals/CommandPaletteModal.tsx))**
-   * Fuzzy-filtered command launcher accessible via `Ctrl+K` or the navbar search pill (`Search Ctrl+K`).
-   * Supports full keyboard navigation (`ArrowUp`, `ArrowDown`, `Enter`, `Esc`) across 7 navigation views and 4 instant actions (Export Incident Report, Refresh Telemetry, Open Architecture Specs, Open Settings).
+### 5.2 Context, Networking & Utilities
 
-3. **One-Click Incident & Shift Handover Report ([frontend/src/utils/exportIncidentReport.ts](file:///d:/movie/PROJECT/frontend/src/utils/exportIncidentReport.ts))**
-   * `downloadIncidentReport({ overview, dataset, model, discoveries })`: Compiles active dataset metadata, model weights ($\alpha, \beta, \gamma, \tau$), KPIs, state distribution, and ranked top-5 sensor deviations per candidate into a downloadable Markdown report (`TRIO_Incident_Report_YYYY-MM-DD.md`).
+#### [frontend/src/context/TelemetryContext.tsx](file:///d:/movie/PROJECT/frontend/src/context/TelemetryContext.tsx)
+* `TelemetryProvider`: Manages background polling (`intervalSec`: `2s`/`5s`/`10s`/`30s`, persisted in `localStorage`), `isPaused`, `isFetching`, `lastUpdated`, and `fetchError`. Uses `inFlightRef` lock to prevent overlapping network requests on slow connections.
+* `togglePaused()`: Toggles background polling on/off.
+* `triggerManualRefresh()`: Forces an immediate fetch bypassing timer wait.
+* `useTelemetry()`: Custom hook exposing `TelemetryContextType` to child components.
 
-4. **Overview Dashboard ([frontend/src/components/pages/OverviewPage.tsx](file:///d:/movie/PROJECT/frontend/src/components/pages/OverviewPage.tsx))**
-   * **4 Specular KPI Cards**: Observations Processed, Known Operational States, Unknown Candidates, Confirmed Discoveries.
-   * **Interactive Anomaly Replay & Time-Travel Scrubber**: Play / Pause / Reset controls with `1x` / `2x` / `4x` speed and a timeline slider (`replayIndex`). Uses `useMemo` (`visibleSensorTrends`, `visibleContradictionTrend`) to replay multi-sensor dynamics and contradiction spikes step-by-step without extra API calls.
-   * **Interactive Threshold ($\tau$) "What-If" Sensitivity Slider**: Live range slider (`0.15`–`0.75`, default `0.32`) driving a Recharts `<ReferenceLine />` on the Contradiction Score Trend chart and real-time `CM Flagged` vs. `Suppressed` observation counters (`thresholdStats`).
+#### [frontend/src/services/api.ts](file:///d:/movie/PROJECT/frontend/src/services/api.ts)
+* `resolveApiBaseUrl()`: Reads `VITE_API_BASE_URL`, strips trailing slashes, guards against unconfigured angle-bracket placeholders (`<your-deployed-backend-url>`), and falls back safely to `/api` (which routes through Vercel's reverse proxy in production).
+* `api` object: Exposes typed async methods for all 31 endpoints (`login`, `getProfile`, `updateProfile`, `uploadAvatar`, `getSessions`, `logoutOtherSessions`, `forgotPassword`, `resetPassword`, `getOverview`, `getCurrentDataset`, `getDatasetPreview`, `uploadCSV`, `generateSynthetic`, `loadMetro`, `getModelStatus`, `trainModel`, `getModelHistory`, `getMemoryStatus`, `getSTM`, `getLTM`, `getCM`, `getDiscoveries`, `updateCandidateStatus`, `getBenchmarks`, `testConnection`).
 
-5. **Discoveries Inspector ([frontend/src/components/pages/DiscoveriesPage.tsx](file:///d:/movie/PROJECT/frontend/src/components/pages/DiscoveriesPage.tsx))**
-   * **Explainable Root-Cause Sensor Attribution**: `rankedAttribution` (`useMemo`) normalizes `|Δ_i| / Σ|Δ_j|` across `feature_deltas` to rank the top 3 contributing sensors by `% Share of Total Drift`.
-   * **Tri-Factor Contradiction Breakdown**: Visualizes how Prototype Distance ($\mathcal{D}$: 40%), Temporal Drift ($\mathcal{T}$: 35%), and Distributional Anomaly ($\mathcal{A}$: 25%) combined to produce `mean_contradiction_score`.
-   * **Human-in-the-Loop Governance**: One-click `Confirm State`, `Hold Validation`, and `Reject` actions persisted via `/api/discoveries/{id}/status`.
+#### [frontend/src/utils/exportIncidentReport.ts](file:///d:/movie/PROJECT/frontend/src/utils/exportIncidentReport.ts)
+* `downloadIncidentReport({ overview, dataset, model, discoveries })`: Compiles a timestamped Markdown operational handover report (`TRIO_Incident_Report_YYYY-MM-DD.md`) containing model hyperparameters ($\alpha, \beta, \gamma, \tau$), KPIs, state distribution, and ranked top-5 sensor deviations per discovery candidate, and triggers browser download via `Blob` + `URL.createObjectURL`.
 
-6. **Landing Page & Interactive SCADA Console ([LandingPage.tsx](file:///d:/movie/PROJECT/frontend/src/components/pages/LandingPage.tsx), [IndustrialHeroConsole.tsx](file:///d:/movie/PROJECT/frontend/src/components/common/IndustrialHeroConsole.tsx))**
-   * Displays the hero headline *"Intelligence Beyond / Static SCADA Thresholds."* over a radially masked architectural grid.
-   * `IndustrialHeroConsole` renders live SVG oscilloscope waveforms for `TP2`, `Reservoirs`, and `Oil_temp` with gradient area fills, `+3σ / μ / -3σ` scale markers, spring-animated Liquid Glass scenario pills (`Normal Baseline`, `Novel Regime`, `Transient Pulse`), and a calibrated `τ = 0.32` Contradiction Scoring meter.
+### 5.3 Layout, Brand & 3D Visualizers
+
+* **[Navbar.tsx](file:///d:/movie/PROJECT/frontend/src/components/layout/Navbar.tsx)**: Floating Liquid Glass top bar with live digital clock (`useEffect` 1s interval + `tabular-nums`), `Search Ctrl+K` command palette trigger, dataset/model status badges, auto-refresh pause/resume pill, notification popover, and operator profile dropdown.
+* **[Sidebar.tsx](file:///d:/movie/PROJECT/frontend/src/components/layout/Sidebar.tsx)**: Responsive drawer/sticky sidebar with `handleItemClick(id)`, `framer-motion` spring active indicator (`layoutId="sidebar-active-bar"`), Liquid Glass active pill, live candidate badge count, and `C = α·D + β·T + γ·A` context box.
+* **[TrioLogo.tsx](file:///d:/movie/PROJECT/frontend/src/components/brand/TrioLogo.tsx)** & **[Trio3DLogo.tsx](file:///d:/movie/PROJECT/frontend/src/components/brand/Trio3DLogo.tsx)**: Animated SVG Tri-Memory emblem (Molten Amber STM, Warm Gold LTM, Copper CM nodes) and Three.js mouse-tracking logo variant.
+* **[IndustrialHeroConsole.tsx](file:///d:/movie/PROJECT/frontend/src/components/common/IndustrialHeroConsole.tsx)**:
+  * `useEffect`: 400ms ticker driving live simulated MetroPT-3 waveforms (`TP2`, `Reservoirs`, `Oil_temp`).
+  * `useMemo` (`linePoints`, `areaPoints`, `scanY`): Computes SVG polyline, gradient area fill polygon, and leading-edge cursor coordinates.
+  * Interactive Liquid Glass scenario tabs (`Normal Baseline`, `Novel Regime`, `Transient Pulse`) with spring `layoutId="hero-mode-pill"` and `τ = 0.32` Contradiction Scoring meter.
+* **[TriMemoryPipelineMonitor.tsx](file:///d:/movie/PROJECT/frontend/src/components/common/TriMemoryPipelineMonitor.tsx)**: Displays live STM %, LTM cluster count, CM evidence points, and `τ ≥ 0.32 Routing` indicator.
+* **[TriMemoryDigitalTwin3D.tsx](file:///d:/movie/PROJECT/frontend/src/components/3d/TriMemoryDigitalTwin3D.tsx)**, **[TriMemoryMiniVisualizer3D.tsx](file:///d:/movie/PROJECT/frontend/src/components/3d/TriMemoryMiniVisualizer3D.tsx)**, **[Interactive3DBackground.tsx](file:///d:/movie/PROJECT/frontend/src/components/common/Interactive3DBackground.tsx)**: Three.js WebGL scenes with `handlePointerMove`, `handlePointerClick`, and `handleResize` lifecycle cleanup.
+
+### 5.4 Modals
+
+* **[CommandPaletteModal.tsx](file:///d:/movie/PROJECT/frontend/src/components/modals/CommandPaletteModal.tsx)**:
+  * `commands` (`useMemo`): Registers 7 navigation targets and 4 quick actions.
+  * `filtered` (`useMemo`): Real-time fuzzy search across label, subtitle, and category.
+  * `useEffect` (Keyboard handler): Handles `ArrowDown`, `ArrowUp`, `Enter`, and `Escape`.
+* **[SettingsModal.tsx](file:///d:/movie/PROJECT/frontend/src/components/modals/SettingsModal.tsx)**:
+  * 4 tabs: **Interface** (layout density & alert toggle), **Telemetry Stream** (polling rate & pause), **Backend API** (`handleTestConnection()` latency check), and **Regional** (12h/24h & timezone). `handleSaveAll()` persists settings to `localStorage`.
+* **[ProfileModal.tsx](file:///d:/movie/PROJECT/frontend/src/components/modals/ProfileModal.tsx)**:
+  * `handleSaveProfile`: Updates operator metadata via `PUT /api/auth/profile`.
+  * `handleChangePassword`: Validates and updates operator password.
+  * `handleLogoutOtherSessions`: Revokes concurrent sessions via `POST /api/auth/sessions/logout-others`.
+* **[VivaGuideModal.tsx](file:///d:/movie/PROJECT/frontend/src/components/modals/VivaGuideModal.tsx)**: Interactive academic defense & architecture reference modal.
+
+### 5.5 All 8 Application Pages
+
+1. **[LandingPage.tsx](file:///d:/movie/PROJECT/frontend/src/components/pages/LandingPage.tsx)**:
+   * Floating Liquid Glass capsule navbar, hero headline (*"Intelligence Beyond / Static SCADA Thresholds."*), `IndustrialHeroConsole`, Tri-Memory cards, mathematical formulation overview, and industrial scope section.
+2. **[LoginPage.tsx](file:///d:/movie/PROJECT/frontend/src/components/pages/LoginPage.tsx)**:
+   * `handleSubmit`: Validates credentials and calls `api.login()`, handling `force_password_change` if required.
+   * `setDemoCredentials(u, p)`: 1-click autofill for `Admin: 12406834` and `Evaluator: evaluator`.
+   * Password recovery flow (`request` $\to$ `reset` via single-use token).
+3. **[OverviewPage.tsx](file:///d:/movie/PROJECT/frontend/src/components/pages/OverviewPage.tsx)**:
+   * **4 Specular KPI Cards**: Observations Processed, Known States, Unknown Candidates, Confirmed Discoveries.
+   * **Anomaly Replay & Time-Travel Scrubber**: `useEffect` playback timer (`450 / replaySpeed` ms), Play/Pause/Reset buttons, `1x`/`2x`/`4x` speed selector, and timeline slider slicing `visibleSensorTrends` and `visibleContradictionTrend` via `useMemo`.
+   * **What-If Threshold ($\tau$) Sensitivity Slider**: Live range (`0.15`–`0.75`, default `0.32`) updating Recharts `<ReferenceLine y={simThreshold} />` and `thresholdStats` (`CM Flagged` vs `Suppressed`).
+   * **Export Report Button**: Calls `onExportReport()` to download the Markdown incident report.
+4. **[DatasetsPage.tsx](file:///d:/movie/PROJECT/frontend/src/components/pages/DatasetsPage.tsx)**:
+   * `loadPreview` (`useCallback`): Fetches paginated raw rows from `/api/datasets/preview`.
+   * `handleFileUpload` & `handleDrop`: Drag-and-drop or file-picker CSV upload to `/api/datasets/upload-csv`.
+   * `handleGenerateSynthetic`: Triggers `/api/datasets/generate-synthetic` (and supports hot-swapping back to MetroPT-3).
+5. **[ModelLabPage.tsx](file:///d:/movie/PROJECT/frontend/src/components/pages/ModelLabPage.tsx)**:
+   * `loadHistory`: Fetches historical training runs from `/api/models/history`.
+   * `handleTrain`: Submits interactive $\alpha, \beta, \gamma$ weights, $\tau$ threshold, and selected features to `POST /api/models/train` and triggers `onTrainingComplete()`.
+6. **[TriMemoryPage.tsx](file:///d:/movie/PROJECT/frontend/src/components/pages/TriMemoryPage.tsx)**:
+   * `loadMemoryData`: Fetches live STM window, LTM prototype centroids/radii, and CM discrepancy records from `/api/memory/*`.
+7. **[DiscoveriesPage.tsx](file:///d:/movie/PROJECT/frontend/src/components/pages/DiscoveriesPage.tsx)**:
+   * `handleStatusChange(candidateId, newStatus)`: Persists `Confirmed`, `Under Validation`, or `Rejected` governance decisions.
+   * `rankedAttribution` (`useMemo`): Computes `% Share of Total Drift` across `feature_deltas` to rank the top 3 root-cause sensors.
+   * **Tri-Factor Contradiction Breakdown**: Visualizes `C = 0.40D + 0.35T + 0.25A` contribution bars alongside multivariate $\Delta\sigma$ shifts and centroid coordinates.
+8. **[EvaluationPage.tsx](file:///d:/movie/PROJECT/frontend/src/components/pages/EvaluationPage.tsx)**:
+   * `loadBenchmark` (`useCallback`): Fetches comparative metrics (TRIO vs K-Means, DBSCAN, Isolation Forest) from `/api/evaluation/benchmark`.
+   * `handleExportCSV`: Downloads the benchmark comparison table as CSV.
 
 ---
 
-## 6. Operational Datasets & Benchmarking
+## 6. Operational Datasets, Benchmarks & Cloud Topology
 
-### 6.1 Primary Dataset: MetroPT-3 Railway Air Compressor SCADA
-* **Source**: Real-world SCADA telemetry from Metro do Porto train unit PT003 (IEEE DSAA 2021).
-* **Preprocessed Stream** ([backend/data/MetroPT3_AirCompressor_Operational.csv](file:///d:/movie/PROJECT/backend/data/MetroPT3_AirCompressor_Operational.csv)): **2,300 continuous observations** across **20 feature channels** (`TP2`, `TP3`, `H1`, `DV_pressure`, `Reservoirs`, `Oil_temperature`, `Motor_current`, plus discrete actuators `COMP`, `DV_eletric`, `Towers`).
-* **Severe Failure Event**: Captures the July 15, 2020 thermal overload where `Oil_temperature` escalates to **$89.05^\circ\text{C}$** and reservoir pressure collapses.
-
-### 6.2 Comparative Benchmark Results (MetroPT-3)
-
-| Evaluation Metric | K-Means Clustering | Standalone DBSCAN | Isolation Forest | **TRIO (Proposed Platform)** |
-| :--- | :---: | :---: | :---: | :---: |
-| **Precision** | 100.0% | 100.0% | 99.7% | **`100.0%` (Zero False Alarms)** |
-| **Recall** | 100.0% | 1.0% | 100.0% | **`79.7% — 89.2%`** |
-| **F1-Score** | 100.0% | 1.98% | 99.8% | **`88.68% — 94.27%`** |
-| **False Discovery Rate (FDR)**| 0.0% | 0.0% | 0.3% | **`0.0%` (Immune to Noise)** |
-| **Inference Latency** | 38.8 ms | 27.5 ms | 89.3 ms | **`230.7 ms` (Real-Time Capable)** |
-
----
-
-## 7. Cloud Deployment Topology & Verification
-
-```mermaid
-flowchart LR
-    Browser["Client Browser"] -->|HTTPS| Vercel["Vercel Edge Network<br/>(trio-one-rho.vercel.app)"]
-    Vercel -->|Static Assets| SPA["React 19 + Vite Bundle<br/>(Liquid Glass UI)"]
-    Vercel -->|Reverse Proxy /api/*| Render["Render Container Service<br/>(trio-59r2.onrender.com)"]
-    Render --> FastAPI["FastAPI + Python 3.11<br/>(python -m uvicorn)"]
-    FastAPI --> DB["SQLite / PostgreSQL<br/>(trio.db)"]
-    FastAPI --> ML["Tri-Memory Engine<br/>(STM, LTM, CM, MetroPT-3)"]
-```
-
-* **Zero-CORS Vercel Proxy** ([frontend/vercel.json](file:///d:/movie/PROJECT/frontend/vercel.json)): Rewrites `/api/:match*` directly to `https://trio-59r2.onrender.com/api/:match*`.
-* **Automated Test Suites**:
-  * **Backend**: `cd backend && pytest tests/ -v` (**75 tests passing**).
-  * **Frontend**: `cd frontend && npm run build && npm test` (**21 Vitest tests passing** + clean TypeScript/Vite production bundle).
+* **Primary Dataset**: **MetroPT-3 Railway Air Compressor** ([backend/data/MetroPT3_AirCompressor_Operational.csv](file:///d:/movie/PROJECT/backend/data/MetroPT3_AirCompressor_Operational.csv), 2,300 rows $\times$ 20 cols) capturing the July 15, 2020 severe thermal overheat ($89.05^\circ\text{C}$).
+* **TRIO Benchmark Performance (MetroPT-3)**: **100.0% Precision (0.0% FDR)**, **79.7%–89.2% Recall**, **88.68%–94.27% F1-Score**, **0-timestep detection delay**, **230.7 ms inference latency**.
+* **Production Proxy ([frontend/vercel.json](file:///d:/movie/PROJECT/frontend/vercel.json))**: Rewrites `/api/:match*` on Vercel (`trio-one-rho.vercel.app`) directly to Render (`trio-59r2.onrender.com/api/:match*`), eliminating browser CORS blocks.
+* **Verification Suites**:
+  * Backend Pytest: `cd backend && pytest tests/ -v` (**75 passing tests**)
+  * Frontend Build & Vitest: `cd frontend && npm run build && npm test` (**21 passing tests**)
