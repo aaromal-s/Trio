@@ -116,11 +116,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             className="font-display text-4xl sm:text-5xl lg:text-[4rem] font-bold tracking-[-0.025em] max-w-4xl leading-[1.12] mb-6"
           >
             <span className="text-transparent bg-clip-text bg-gradient-to-b from-white via-stone-100 to-stone-300">
-              See What Your SCADA
+              Intelligence Beyond
             </span>{' '}
             <br className="hidden sm:inline" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-400 to-yellow-200 drop-shadow-[0_0_28px_rgba(249,115,22,0.22)]">
-              Was Never Built to Catch.
+              Static SCADA Thresholds.
             </span>
           </motion.h1>
 
