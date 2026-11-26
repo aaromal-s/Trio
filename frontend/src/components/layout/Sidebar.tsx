@@ -112,10 +112,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <button
                     key={item.id}
                     onClick={() => handleItemClick(item.id)}
-                    className={`w-full group flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-all duration-200 relative ${
+                    className={`w-full group flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-all duration-200 relative active:scale-[0.98] ${
                       isActive
-                        ? 'bg-gradient-to-r from-orange-500/15 via-trio-card to-trio-card text-trio-text shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] border border-trio-cyan/35'
-                        : 'text-trio-muted hover:text-trio-text hover:bg-trio-card/50 border border-transparent'
+                        ? 'liquid-glass-pill text-trio-text border-orange-500/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_8px_20px_-8px_rgba(249,115,22,0.3)]'
+                        : 'text-trio-muted hover:text-trio-text hover:bg-white/[0.05] border border-transparent'
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">

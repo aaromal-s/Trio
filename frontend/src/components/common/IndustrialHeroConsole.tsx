@@ -97,27 +97,27 @@ export const IndustrialHeroConsole: React.FC = () => {
           <span className="text-[11px] font-mono text-stone-400 hidden sm:inline">MetroPT-3 Air Compressor &bull; 7 Channels</span>
         </div>
 
-        {/* Interactive Scenario Selector with Animated Pill */}
-        <div className="flex items-center gap-1 bg-stone-900/90 p-1 rounded-xl border border-stone-800/90 text-xs">
+        {/* Interactive Scenario Selector with iOS Liquid Glass Pill */}
+        <div className="flex items-center gap-1 bg-stone-950/60 p-1 rounded-full border border-white/10 backdrop-blur-xl text-xs shadow-inner">
           {[
-            { id: 'normal', label: 'Normal Baseline', activeClass: 'text-orange-300', bgClass: 'bg-orange-500/15 border-orange-500/40' },
-            { id: 'cavitation', label: 'Novel Regime (Overheat)', activeClass: 'text-rose-300', bgClass: 'bg-rose-500/15 border-rose-500/40' },
-            { id: 'transient', label: 'Transient Pulse (Noise)', activeClass: 'text-yellow-300', bgClass: 'bg-yellow-500/15 border-yellow-500/40' },
+            { id: 'normal', label: 'Normal Baseline', activeClass: 'text-orange-200', bgClass: 'bg-orange-500/20 border-orange-400/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.28)]' },
+            { id: 'cavitation', label: 'Novel Regime (Overheat)', activeClass: 'text-rose-200', bgClass: 'bg-rose-500/20 border-rose-400/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.28)]' },
+            { id: 'transient', label: 'Transient Pulse (Noise)', activeClass: 'text-yellow-200', bgClass: 'bg-yellow-500/20 border-yellow-400/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.28)]' },
           ].map((tab) => {
             const isActive = mode === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setMode(tab.id as SimulationMode)}
-                className={`relative px-3 py-1.5 rounded-lg font-medium transition-colors ${
-                  isActive ? tab.activeClass : 'text-slate-400 hover:text-slate-200'
+                className={`relative px-3.5 py-1.5 rounded-full font-medium transition-all active:scale-95 ${
+                  isActive ? tab.activeClass : 'text-stone-400 hover:text-stone-200'
                 }`}
               >
                 {isActive && (
                   <motion.div
                     layoutId="hero-mode-pill"
-                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                    className={`absolute inset-0 rounded-lg border ${tab.bgClass}`}
+                    transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+                    className={`absolute inset-0 rounded-full border backdrop-blur-md ${tab.bgClass}`}
                   />
                 )}
                 <span className="relative z-10">{tab.label}</span>

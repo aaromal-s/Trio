@@ -30,43 +30,55 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 }) => {
   return (
     <div className="min-h-screen bg-trio-bg text-trio-text flex flex-col selection:bg-trio-cyan selection:text-black">
-      {/* Top Enterprise Header */}
-      <header className="sticky top-0 z-50 w-full h-18 bg-trio-bg/85 backdrop-blur-2xl border-b border-stone-800/80 px-6 sm:px-12 flex items-center justify-between shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
-        <TrioLogo size="md" subtitle="Learn. Remember. Discover." />
-        
-        <nav className="hidden md:flex items-center gap-8 text-xs font-semibold uppercase tracking-wider text-trio-muted">
-          <a href="#how-it-works" className="hover:text-orange-400 transition-colors">Methodology</a>
-          <a href="#three-memories" className="hover:text-orange-400 transition-colors">Tri-Memory</a>
-          <a href="#research" className="hover:text-orange-400 transition-colors">Formulation</a>
-          <a href="#applications" className="hover:text-orange-400 transition-colors">Industrial Scope</a>
-        </nav>
+      {/* Floating iOS Liquid Glass Header */}
+      <div className="sticky top-3 z-50 px-4 sm:px-8 w-full pointer-events-none">
+        <header className="pointer-events-auto max-w-7xl mx-auto h-16 rounded-2xl liquid-glass-nav px-4 sm:px-6 flex items-center justify-between">
+          <TrioLogo size="md" subtitle="Learn. Remember. Discover." />
+          
+          <nav className="hidden md:flex items-center gap-1.5 p-1 rounded-full bg-stone-950/40 border border-white/10 backdrop-blur-md">
+            {[
+              { href: '#how-it-works', label: 'Methodology' },
+              { href: '#three-memories', label: 'Tri-Memory' },
+              { href: '#research', label: 'Formulation' },
+              { href: '#applications', label: 'Industrial Scope' },
+            ].map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className="px-3.5 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider text-stone-300 hover:text-white hover:bg-white/10 transition-all duration-200 active:scale-95"
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onOpenViva}
-            className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-stone-300 hover:text-white bg-stone-900/80 hover:bg-stone-800 border border-stone-700/70 rounded-xl transition-all shadow-inner-specular"
-            title="System Architecture & Mathematical Specifications"
-          >
-            <FileText className="w-3.5 h-3.5 text-orange-400" />
-            <span>Architecture Specs</span>
-          </button>
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={onOpenViva}
+              className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-stone-200 hover:text-white rounded-xl liquid-glass-btn"
+              title="System Architecture & Mathematical Specifications"
+            >
+              <FileText className="w-3.5 h-3.5 text-orange-400" />
+              <span>Architecture Specs</span>
+            </button>
 
-          <button
-            onClick={onOpenLogin}
-            className="px-3.5 py-2 text-xs font-medium text-trio-muted hover:text-white transition-colors"
-          >
-            Sign In
-          </button>
+            <button
+              onClick={onOpenLogin}
+              className="px-3.5 py-2 text-xs font-medium text-stone-300 hover:text-white rounded-xl hover:bg-white/10 transition-all active:scale-95"
+            >
+              Sign In
+            </button>
 
-          <button
-            onClick={onEnterDemo}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-stone-950 bg-gradient-to-r from-orange-500 to-amber-400 hover:from-orange-400 hover:to-amber-300 rounded-xl shadow-[0_0_20px_-4px_rgba(249,115,22,0.55)] transition-all"
-          >
-            <span>Launch Platform</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </header>
+            <button
+              onClick={onEnterDemo}
+              className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-stone-950 rounded-xl liquid-glass-primary"
+            >
+              <span>Launch Platform</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </header>
+      </div>
 
       {/* Hero Section */}
       <section className="relative pt-16 pb-24 px-6 sm:px-12 w-full overflow-hidden">
@@ -157,7 +169,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           >
             <button
               onClick={onEnterDemo}
-              className="group flex items-center gap-2.5 px-7 py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-400 text-stone-950 font-semibold text-sm hover:from-orange-400 hover:to-amber-300 shadow-[0_0_30px_-5px_rgba(249,115,22,0.55)] hover:shadow-[0_0_38px_-4px_rgba(249,115,22,0.75)] transition-all"
+              className="group flex items-center gap-2.5 px-7 py-3.5 rounded-2xl text-stone-950 font-semibold text-sm liquid-glass-primary"
             >
               <span>Launch Live Console</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
@@ -165,10 +177,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
             <a
               href="#three-memories"
-              className="flex items-center gap-2 px-6 py-3.5 rounded-xl bg-stone-900/80 text-stone-100 font-medium text-sm border border-stone-700/80 hover:border-orange-500/40 hover:bg-stone-800/80 shadow-inner-specular transition-all"
+              className="flex items-center gap-2 px-6 py-3.5 rounded-2xl text-stone-100 font-medium text-sm liquid-glass-btn"
             >
               <span>Tri-Memory Architecture</span>
-              <ChevronRight className="w-4 h-4 text-trio-muted" />
+              <ChevronRight className="w-4 h-4 text-orange-400" />
             </a>
           </motion.div>
 

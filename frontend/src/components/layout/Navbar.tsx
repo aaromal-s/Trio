@@ -79,7 +79,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   const formattedDate = currentTime.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
 
   return (
-    <header className="sticky top-0 z-40 w-full h-16 bg-trio-secondary/90 backdrop-blur-md border-b border-trio-border px-4 sm:px-6 flex items-center justify-between">
+    <div className="sticky top-2.5 z-40 px-3 sm:px-5 w-full pointer-events-none">
+      <header className="pointer-events-auto w-full h-16 rounded-2xl liquid-glass-nav px-4 sm:px-6 flex items-center justify-between">
       {/* Brand & Mobile Hamburger */}
       <div className="flex items-center gap-3">
         {onToggleMobileMenu && (
@@ -139,13 +140,13 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Auto Refresh & Pause/Resume Control */}
-        <div className="flex items-center gap-1.5 bg-trio-card px-2.5 py-1.5 rounded-lg border border-trio-border">
+        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl liquid-glass-pill">
           <button
             onClick={onToggleAutoRefresh}
-            className={`p-1 rounded text-xs transition-colors flex items-center gap-1 font-medium ${
+            className={`p-1 rounded-lg text-xs transition-all flex items-center gap-1 font-medium active:scale-95 ${
               autoRefresh 
-                ? 'text-trio-cyan hover:bg-cyan-950/40' 
-                : 'text-trio-muted hover:bg-slate-800'
+                ? 'text-trio-cyan hover:bg-white/10' 
+                : 'text-trio-muted hover:bg-white/10'
             }`}
             title={autoRefresh ? `Pause ${refreshInterval}s Auto-Refresh` : `Resume ${refreshInterval}s Auto-Refresh`}
           >
@@ -279,6 +280,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
       </div>
-    </header>
+      </header>
+    </div>
   );
 };
