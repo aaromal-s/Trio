@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { TrioLogo } from '../brand/TrioLogo';
-import { IndustrialHeroConsole } from '../common/IndustrialHeroConsole';
+import { TriMemory3DHero } from '../common/TriMemory3DHero';
 import { 
   ArrowRight, 
   Compass, 
@@ -184,14 +184,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </a>
           </motion.div>
 
-          {/* Interactive SCADA & Discovery Console (High-Performance Industrial Visualizer) */}
+          {/* Interactive 3D Tri-Memory Neural Core */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.34 }}
             className="w-full max-w-5xl"
           >
-            <IndustrialHeroConsole />
+            <TriMemory3DHero />
           </motion.div>
         </div>
       </section>
