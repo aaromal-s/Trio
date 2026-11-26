@@ -438,20 +438,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </section>
 
-      {/* Enterprise Tech Stack Bar */}
-      <div className="py-10 bg-slate-950/60 border-t border-trio-border px-6 sm:px-12 text-center">
-        <p className="text-[11px] text-trio-muted uppercase tracking-widest font-semibold mb-4">
-          Production Architecture &amp; Technology Stack
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-slate-300 font-mono">
-          <span className="px-3 py-1 rounded-md bg-slate-900 border border-slate-800">React 19 + TypeScript</span>
-          <span className="px-3 py-1 rounded-md bg-slate-900 border border-slate-800">FastAPI + Python 3.14</span>
-          <span className="px-3 py-1 rounded-md bg-slate-900 border border-slate-800">Tailwind CSS</span>
-          <span className="px-3 py-1 rounded-md bg-slate-900 border border-slate-800">Scikit-Learn (DBSCAN + StandardScaler)</span>
-          <span className="px-3 py-1 rounded-md bg-slate-900 border border-slate-800">Recharts Telemetry Engine</span>
-        </div>
-      </div>
-
       {/* Clean Footer */}
       <footer className="py-6 px-6 sm:px-12 max-w-7xl mx-auto w-full flex flex-col sm:flex-row items-center justify-between text-xs text-trio-muted border-t border-trio-border/40 gap-4">
         <div className="flex items-center gap-2">
