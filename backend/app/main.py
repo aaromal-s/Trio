@@ -96,7 +96,7 @@ if is_production:
     allow_origin_regex = r"^https://.*\.vercel\.app$"
 else:
     allowed_origins = settings.DEV_CORS_ORIGINS
-    allow_origin_regex = r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$"
+    allow_origin_regex = r"^(https?://(localhost|127\.0\.0\.1)(:\d+)?|https://.*\.vercel\.app)$"
 
 app.add_middleware(
     CORSMiddleware,
