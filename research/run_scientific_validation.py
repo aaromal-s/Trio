@@ -101,7 +101,7 @@ def run_comprehensive_validation():
     
     y_pred_trio = trio_stream["is_novel_flags"]
     metrics_trio = ModelEvaluator.compute_metrics(
-        y_test_binary, y_pred_trio, runtime_ms=trio_infer_time, model_name="TRIO (Ours)"
+        y_test_binary, y_pred_trio, X_eval=X_test, runtime_ms=trio_infer_time, model_name="TRIO (Ours)"
     )
     metrics_trio["training_time_ms"] = round(trio_train_time, 2)
     metrics_trio["candidates_discovered"] = len(trio.candidates)
@@ -109,32 +109,33 @@ def run_comprehensive_validation():
     # 2. K-Means Baseline
     kmeans_res = BaselinePipelines.run_kmeans(X_train, X_test, n_clusters=4)
     metrics_kmeans = ModelEvaluator.compute_metrics(
-        y_test_binary, kmeans_res["predictions"], runtime_ms=kmeans_res["runtime_ms"], model_name="K-Means"
+        y_test_binary, kmeans_res["predictions"], X_eval=X_test, runtime_ms=kmeans_res["runtime_ms"], model_name="K-Means"
     )
     
     # 3. DBSCAN Baseline
     dbscan_res = BaselinePipelines.run_dbscan(X_train, X_test, eps=0.8, min_samples=10)
     metrics_dbscan = ModelEvaluator.compute_metrics(
-        y_test_binary, dbscan_res["predictions"], runtime_ms=dbscan_res["runtime_ms"], model_name="DBSCAN"
+        y_test_binary, dbscan_res["predictions"], X_eval=X_test, runtime_ms=dbscan_res["runtime_ms"], model_name="DBSCAN"
     )
     
     # 4. Isolation Forest Baseline
     iso_res = BaselinePipelines.run_isolation_forest(X_train, X_test, contamination=0.08)
     metrics_iso = ModelEvaluator.compute_metrics(
-        y_test_binary, iso_res["predictions"], runtime_ms=iso_res["runtime_ms"], model_name="Isolation Forest"
+        y_test_binary, iso_res["predictions"], X_eval=X_test, runtime_ms=iso_res["runtime_ms"], model_name="Isolation Forest"
     )
     
     benchmark_list = [metrics_trio, metrics_kmeans, metrics_dbscan, metrics_iso]
     results["benchmarks"] = benchmark_list
     
     print("\n--- BENCHMARK COMPARISON TABLE ---")
-    header = f"{'Model':<18} | {'F1-Score':<8} | {'Precision':<9} | {'Recall':<8} | {'ARI':<8} | {'NMI':<8} | {'FDR':<8} | {'Delay':<6} | {'Latency':<9}"
+    header = f"{'Model':<18} | {'F1-Score':<8} | {'Precision':<9} | {'Recall':<8} | {'ARI':<8} | {'NMI':<8} | {'Silhouette':<10} | {'FDR':<8} | {'Delay':<6} | {'Latency':<9}"
     print(header)
     print("-" * len(header))
     for m in benchmark_list:
+        sil_str = f"{m['silhouette_score']:.4f}" if m.get("silhouette_score") is not None else "N/A"
         print(
             f"{m['model_name']:<18} | {m['f1_score']:<8.4f} | {m['precision']:<9.4f} | {m['recall']:<8.4f} | "
-            f"{m['ari']:<8.4f} | {m['nmi']:<8.4f} | {m['false_discovery_rate']:<8.4f} | "
+            f"{m['ari']:<8.4f} | {m['nmi']:<8.4f} | {sil_str:<10} | {m['false_discovery_rate']:<8.4f} | "
             f"{m['detection_delay_timesteps']:<6} | {m['runtime_ms']:<7.2f}ms"
         )
         

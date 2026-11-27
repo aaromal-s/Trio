@@ -6,7 +6,12 @@ Computes rigorous, honest comparative metrics across algorithms using ground tru
 
 from typing import List, Dict, Any, Optional
 import numpy as np
-from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score, precision_recall_fscore_support
+from sklearn.metrics import (
+    adjusted_rand_score,
+    normalized_mutual_info_score,
+    precision_recall_fscore_support,
+    silhouette_score,
+)
 
 class ModelEvaluator:
     @staticmethod
@@ -15,6 +20,7 @@ class ModelEvaluator:
         y_pred_binary: List[int],
         y_true_multiclass: Optional[List[int]] = None,
         y_pred_clusters: Optional[List[int]] = None,
+        X_eval: Optional[np.ndarray] = None,
         runtime_ms: float = 0.0,
         model_name: str = "TRIO"
     ) -> Dict[str, Any]:
@@ -57,10 +63,22 @@ class ModelEvaluator:
         else:
             detection_delay = 0
 
+        # Silhouette Score (unsupervised cluster cohesion & separation, range [-1, 1])
+        sil_score: Optional[float] = None
+        if X_eval is not None and len(X_eval) == len(y_pred):
+            labels_for_sil = np.array(y_pred_clusters) if y_pred_clusters is not None else y_pred
+            unique_labels = np.unique(labels_for_sil)
+            if 2 <= len(unique_labels) < len(X_eval):
+                try:
+                    sil_score = round(float(silhouette_score(X_eval, labels_for_sil)), 4)
+                except Exception:
+                    sil_score = None
+
         return {
             "model_name": model_name,
             "ari": round(float(ari), 4),
             "nmi": round(float(nmi), 4),
+            "silhouette_score": sil_score,
             "precision": round(float(precision), 4),
             "recall": round(float(recall), 4),
             "f1_score": round(float(f1), 4),
